@@ -1,0 +1,95 @@
+# HealthTrack
+
+HealthTrack is a comprehensive health and wellness tracking application built with Next.js. It provides various calculators for health metrics like BMI, body fat percentage, ideal weight, calorie needs, water intake, and blood pressure.
+
+## Features
+
+- 🧮 **Health Calculators**: BMI, calories, ideal weight, body fat, water intake, blood pressure
+- 🤖 **AI Health Assistant**: Powered by Google's Gemini API for health-related queries
+- 📊 **Profile Dashboard**: Track your health metrics over time
+- 📱 **Responsive Design**: Works on desktop and mobile devices
+- 🌐 **Multilingual Support**: English and Kurdish (Sorani) languages
+- 🔐 **Simple Authentication**: Name-only profiles with no password required
+
+## Getting Started
+
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Create a `.env.local` file from the example:
+
+```bash
+cp .env.example .env.local
+```
+
+If you want to use the AI Health Assistant feature, update the `.env.local` file with your Gemini API key:
+
+```
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+
+## Supabase Setup
+
+This application uses Supabase for data storage. To set up Supabase:
+
+1. Create a Supabase account and project at [supabase.com](https://supabase.com)
+2. Run the SQL migrations found in the `supabase/migrations` folder
+3. Add your Supabase URL and anon key to your `.env.local` file:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+## Deployment on Vercel
+
+The easiest way to deploy this Next.js app is to use Vercel:
+
+1. Push your code to a GitHub repository
+2. Go to [Vercel](https://vercel.com/new) and import your repository
+3. Add the following environment variables in Vercel's project settings:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+   - `NEXT_PUBLIC_GEMINI_API_KEY` (optional) - For AI assistant functionality
+4. Deploy!
+
+Vercel will automatically build and deploy your application.
+
+## Tech Stack
+
+- **Frontend**: Next.js, React, TailwindCSS, Framer Motion
+- **Backend**: Next.js API routes, Supabase
+- **Authentication**: Supabase Auth (name-only authentication)
+- **AI**: Google's Gemini API
+- **PDF Generation**: jsPDF
+- **Languages**: TypeScript, JavaScript
+
+## License
+
+This project is MIT licensed.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Font Test</title>
+  <style>
+    @font-face {
+      font-family: 'NizarBukra';
+      src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    .test-font {
+      font-family: 'NizarBukra', sans-serif;
+      font-size: 24px;
+      margin: 20px;
+    }
+    
+    .default-font {
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Font Test Page</h1>
+  
+  <div class="test-font">
+    This text should use NizarBukra font.
+  </div>
+  
+  <div class="default-font">
+    This text uses the default font (Arial).
+  </div>
+  
+  <script>
+    // Check if the font is loaded
+    document.fonts.ready.then(function() {
+      if (document.fonts.check('1em NizarBukra')) {
+        document.body.insertAdjacentHTML('beforeend', 
+          '<div style="color: green; margin: 20px;">NizarBukra font is loaded!</div>');
+      } else {
+        document.body.insertAdjacentHTML('beforeend', 
+          '<div style="color: red; margin: 20px;">NizarBukra font failed to load.</div>');
+      }
+    });
+  </script>
+</body>
+</html> 

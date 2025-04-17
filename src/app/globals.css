@@ -1,0 +1,343 @@
+@import "tailwindcss";
+
+/* Import Kurdish fonts */
+@font-face {
+  font-family: 'NizarBukra';
+  src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NizarBukra';
+  src: url('/fonts/NizarBukraBold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Keep UJICode as fallback */
+@font-face {
+  font-family: 'UJICode';
+  src: url('/fonts/UJICode-Regular.woff2') format('woff2'),
+       url('/fonts/UJICode-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'UJICode';
+  src: url('/fonts/UJICode-Bold.woff2') format('woff2'),
+       url('/fonts/UJICode-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #f8fafc;
+  --text-color: #334155;
+  --text-dark: #0f172a;
+  --text-light: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--text-color);
+  background-color: #f8fafc;
+}
+
+/* Force NizarBukra font for all Kurdish content */
+html[dir="rtl"] {
+  font-family: 'NizarBukra', sans-serif !important;
+}
+
+html[dir="rtl"] * {
+  font-family: 'NizarBukra', sans-serif !important;
+}
+
+html[dir="rtl"] *::before,
+html[dir="rtl"] *::after {
+  font-family: 'NizarBukra', sans-serif !important;
+}
+
+html[dir="rtl"] p,
+html[dir="rtl"] span,
+html[dir="rtl"] div,
+html[dir="rtl"] a,
+html[dir="rtl"] button,
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select,
+html[dir="rtl"] label,
+html[dir="rtl"] li {
+  font-family: 'NizarBukra', sans-serif !important;
+}
+
+/* RTL Support */
+html[dir="rtl"] .nav-link:after {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .ml-2,
+html[dir="rtl"] .ml-4 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+  margin-right: 1rem;
+}
+
+html[dir="rtl"] .mr-1,
+html[dir="rtl"] .mr-2,
+html[dir="rtl"] .mr-3,
+html[dir="rtl"] .mr-4 {
+  margin-right: 0;
+  margin-left: 0.25rem;
+  margin-left: 0.5rem;
+  margin-left: 0.75rem;
+  margin-left: 1rem;
+}
+
+html[dir="rtl"] .pl-4 {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+html[dir="rtl"] .pr-4 {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
+html[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+html[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+html[dir="rtl"] .space-x-1 > * + * {
+  margin-left: 0;
+  margin-right: 0.25rem;
+}
+
+html[dir="rtl"] .border-l {
+  border-left: none;
+  border-right: 1px solid;
+}
+
+/* Additional Kurdish text styling */
+html[dir="rtl"] {
+  /* Improve Arabic/Kurdish number rendering */
+  font-feature-settings: "tnum" on;
+}
+
+/* Enhanced Kurdish font styling */
+.font-sorani {
+  font-family: 'NizarBukra', 'UJICode', sans-serif !important; /* Ensure NizarBukra has priority */
+  letter-spacing: normal;
+  line-height: 1.8;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Force Kurdish font family on more specific elements */
+html[dir="rtl"] .nav-link,
+html[dir="rtl"] button,
+html[dir="rtl"] a,
+html[dir="rtl"] span,
+html[dir="rtl"] p,
+html[dir="rtl"] h1,
+html[dir="rtl"] h2, 
+html[dir="rtl"] h3, 
+html[dir="rtl"] h4, 
+html[dir="rtl"] h5, 
+html[dir="rtl"] h6,
+html[dir="rtl"] th,
+html[dir="rtl"] td,
+html[dir="rtl"] li,
+html[dir="rtl"] input,
+html[dir="rtl"] select,
+html[dir="rtl"] textarea {
+  font-family: 'NizarBukra', 'UJICode', sans-serif !important;
+}
+
+/* Add a specific Kurdish font utility class */
+.kurdish-text {
+  font-family: 'NizarBukra', 'UJICode', sans-serif !important;
+  direction: rtl;
+}
+
+/* Specific fix for navigation elements to ensure they use correct font */
+.nav-link {
+  @apply relative inline-block px-2 py-2.5 font-medium transition-colors duration-200;
+}
+
+/* Enhance heading styles for Kurdish */
+html[dir="rtl"] h1, 
+html[dir="rtl"] h2, 
+html[dir="rtl"] h3, 
+html[dir="rtl"] h4, 
+html[dir="rtl"] h5, 
+html[dir="rtl"] h6 {
+  font-family: 'NizarBukra', sans-serif !important; /* Add important flag */
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+/* Override specific elements for Kurdish */
+html[dir="rtl"] button,
+html[dir="rtl"] .btn-primary,
+html[dir="rtl"] .btn-secondary {
+  font-family: 'NizarBukra', sans-serif !important;
+}
+
+/* Modern button styles */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2.5 px-5 rounded-lg transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center gap-2;
+}
+
+/* Card styles with subtle hover effects */
+.hover-card {
+  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+/* Gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.bg-gradient-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.bg-gradient-cyan {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.bg-gradient-red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+}
+
+/* Glass morphism effect */
+.glass-card {
+  @apply backdrop-blur-md bg-white/80 border border-white/20 shadow-md;
+}
+
+/* Modern navigation styles */
+.nav-link:after {
+  @apply absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 content-[''];
+}
+
+.nav-link:hover:after, .nav-link.active:after {
+  @apply w-full;
+}
+
+/* Loader styles */
+.loader {
+  @apply relative w-12 h-12 flex justify-center items-center;
+}
+
+.loader:before, .loader:after {
+  @apply absolute content-[''] w-full h-full border-4 border-transparent rounded-full;
+}
+
+.loader:before {
+  @apply border-t-blue-500 border-b-blue-500 animate-spin;
+  animation-duration: 1s;
+}
+
+.loader:after {
+  @apply border-l-blue-300 border-r-blue-300 animate-spin;
+  animation-duration: 1.5s;
+}
+
+/* Input styling */
+.input-modern {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200;
+}
+
+/* Section transitions */
+.section-fade-in {
+  @apply opacity-0 transition-opacity duration-1000;
+  animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #c9c9c9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
+}
