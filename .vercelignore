@@ -1,6 +1,5 @@
 # TypeScript config backups
 tsconfig.build.json
-tsconfig.vercel.json
 *.backup
 
 # Environment files
