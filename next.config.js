@@ -5,9 +5,6 @@ const nextConfig = {
   // Disable middleware temporarily to prevent redirect loops
   skipMiddlewareUrlNormalize: true,
   
-  // Optimize font loading
-  optimizeFonts: true,
-  
   // Increase the priority of static assets
   staticPageGenerationTimeout: 180,
   
