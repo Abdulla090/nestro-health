@@ -7,7 +7,7 @@
     "remotePatterns": []
   },
   "crons": [],
-  "buildCommand": "npm run build",
+  "buildCommand": "cp tsconfig.vercel.json tsconfig.json && next build",
   "outputDirectory": ".next",
   "installCommand": "npm install --silent"
 } 

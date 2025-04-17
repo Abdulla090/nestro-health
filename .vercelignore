@@ -1,0 +1,38 @@
+# TypeScript config backups
+tsconfig.build.json
+tsconfig.vercel.json
+*.backup
+
+# Environment files
+.env.development
+.env.local
+
+# Git related
+.git
+.github
+.gitignore
+
+# Development configs
+.eslintrc
+.eslintrc.json
+.eslintrc.js
+.prettierrc
+.prettierignore
+
+# Documentation files
+README.md
+*.md
+LICENSE
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+__tests__
+**/*.test.*
+**/*.spec.*
+coverage 

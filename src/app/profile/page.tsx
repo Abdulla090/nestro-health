@@ -19,8 +19,37 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
+// Define health record type
+interface HealthRecord {
+  id?: string;
+  profile_id?: string;
+  record_type: string;
+  record_value: number;
+  record_value_2?: number;
+  record_date: string;
+  created_at?: string;
+}
+
+// Define a type for points in charts
+interface ChartPoint {
+  x: number;
+  y: number;
+}
+
+// Define a type for color arrays
+type RGBColor = [number, number, number];
+
+// Define prop types for BarChart
+interface BarChartProps {
+  data: number[];
+  labels: string[];
+  colors: string[];
+  title: string;
+  unit: string;
+}
+
 // Simple chart component
-const BarChart = ({ data, labels, colors, title, unit }) => {
+const BarChart: React.FC<BarChartProps> = ({ data, labels, colors, title, unit }) => {
   const maxValue = Math.max(...data, 1);
   
   return (
@@ -46,8 +75,17 @@ const BarChart = ({ data, labels, colors, title, unit }) => {
   );
 };
 
+// Define prop types for StatCard
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  description?: string;
+  color: string;
+}
+
 // Stat card component for individual stats
-const StatCard = ({ icon, title, value, description, color }) => {
+const StatCard: React.FC<StatCardProps> = ({ icon, title, value, description, color }) => {
   return (
     <motion.div 
       whileHover={{ y: -5 }}
@@ -67,6 +105,13 @@ const StatCard = ({ icon, title, value, description, color }) => {
   );
 };
 
+// Add type for category
+interface Category {
+  name: string;
+  y: number;
+  color: RGBColor;
+}
+
 export default function Profile() {
   const { t, language, setLanguage } = useLanguage();
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -75,14 +120,14 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
-  const [healthRecords, setHealthRecords] = useState([]);
+  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
   const [chartData, setChartData] = useState({
-    bmi: [],
-    weight: [],
-    calories: [],
-    water: [],
-    bodyFat: [],
-    bloodPressure: []
+    bmi: [] as HealthRecord[],
+    weight: [] as HealthRecord[],
+    calories: [] as HealthRecord[],
+    water: [] as HealthRecord[],
+    bodyFat: [] as HealthRecord[],
+    bloodPressure: [] as HealthRecord[]
   });
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -136,27 +181,27 @@ export default function Profile() {
           if (data && data.length > 0) {
             // Process data for charts
             const bmiData = data.filter(r => r.record_type === 'bmi')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
               
             const weightData = data.filter(r => r.record_type === 'weight')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
               
             const caloriesData = data.filter(r => r.record_type === 'calories')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
               
             const waterData = data.filter(r => r.record_type === 'water')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
               
             const bodyFatData = data.filter(r => r.record_type === 'body_fat')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
               
             const bloodPressureData = data.filter(r => r.record_type === 'blood_pressure')
-              .sort((a, b) => new Date(a.record_date) - new Date(b.record_date))
+              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
               .slice(-5);
             
             setChartData({
@@ -168,9 +213,9 @@ export default function Profile() {
               bloodPressure: bloodPressureData
             });
           }
-        } catch (err) {
+        } catch (err: unknown) {
           console.error('Caught error in loadHealthRecords:', err);
-          setError(err.message || 'Failed to load health records');
+          setError(err instanceof Error ? err.message : 'Failed to load health records');
         }
       };
       
@@ -191,7 +236,7 @@ export default function Profile() {
   };
 
   // Format a date nicely
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
     return new Intl.DateTimeFormat('en-US', { 
       month: 'short', 
@@ -257,17 +302,24 @@ export default function Profile() {
       yPos += 20;
       
       // Enhanced visual stat box with more details
-      const addDetailedStatBox = (title, value, description, y, color, details) => {
+      const addDetailedStatBox = (
+        title: string, 
+        value: string, 
+        description: string, 
+        y: number, 
+        color: RGBColor, 
+        details: string
+      ) => {
         // Base box
         pdf.setFillColor(248, 250, 252);
         pdf.roundedRect(15, y, 180, 35, 3, 3, 'F');
         
         // Colored accent on left side
-        pdf.setFillColor(...color);
+        pdf.setFillColor(color[0], color[1], color[2]);
         pdf.rect(15, y, 7, 35, 'F');
         
         // Feature title in colored box
-        pdf.setFillColor(...color, 0.2);
+        pdf.setFillColor(color[0], color[1], color[2], 0.2);
         pdf.rect(22, y, 40, 8, 'F');
         
         pdf.setTextColor(0, 0, 0);
@@ -294,12 +346,12 @@ export default function Profile() {
       
       // Define colors for different metrics (in RGB format)
       const colors = {
-        bmi: [59, 130, 246],       // blue
-        weight: [16, 185, 129],    // green
-        bodyFat: [249, 115, 22],   // orange
-        calories: [239, 68, 68],   // red
-        water: [6, 182, 212],      // cyan
-        bloodPressure: [139, 92, 246] // purple
+        bmi: [59, 130, 246] as RGBColor,       // blue
+        weight: [16, 185, 129] as RGBColor,    // green
+        bodyFat: [249, 115, 22] as RGBColor,   // orange
+        calories: [239, 68, 68] as RGBColor,   // red
+        water: [6, 182, 212] as RGBColor,      // cyan
+        bloodPressure: [139, 92, 246] as RGBColor // purple
       };
       
       // Define detailed descriptions for each feature
@@ -394,7 +446,7 @@ export default function Profile() {
       if (latestBloodPressure) {
         let category = "";
         const systolic = latestBloodPressure.record_value;
-        const diastolic = latestBloodPressure.record_value_2;
+        const diastolic = latestBloodPressure.record_value_2 || 0; // Default to 0 if undefined
         
         if (systolic < 90 || diastolic < 60) category = "Low";
         else if (systolic < 120 && diastolic < 80) category = "Normal";
@@ -486,7 +538,7 @@ export default function Profile() {
           gridPositions.forEach(gridValue => {
             const lineY = yPos + 50 - ((gridValue / maxBmi) * 40);
             pdf.setDrawColor(220, 220, 220);
-            pdf.setDashPattern([2, 2], 0);
+            pdf.setLineDashPattern([2, 2], 0);
             pdf.line(25, lineY, 175, lineY);
             
             // Add label for reference line
@@ -496,7 +548,7 @@ export default function Profile() {
           });
           
           // Reset dash pattern
-          pdf.setDashPattern([], 0);
+          pdf.setLineDashPattern([], 0);
           
           // Draw X and Y axes
           pdf.setDrawColor(150, 150, 150);
@@ -505,10 +557,10 @@ export default function Profile() {
           
           // Draw bars with connecting line
           const barWidth = 140 / bmiValues.length;
-          const points = [];
+          const points: ChartPoint[] = [];
           
           // First draw connecting line to show trend
-          pdf.setDrawColor(...colors.bmi);
+          pdf.setDrawColor(colors.bmi[0], colors.bmi[1], colors.bmi[2]);
           pdf.setLineWidth(1.5);
           
           bmiValues.forEach((bmi, idx) => {
@@ -553,11 +605,11 @@ export default function Profile() {
           pdf.setFontSize(7);
           
           // Category zones with labels
-          const categories = [
-            { name: "Underweight", y: 18.5, color: [59, 130, 246] },
-            { name: "Normal", y: 25, color: [16, 185, 129] },
-            { name: "Overweight", y: 30, color: [245, 158, 11] },
-            { name: "Obese", y: 35, color: [239, 68, 68] }
+          const categories: Category[] = [
+            { name: "Underweight", y: 18.5, color: [59, 130, 246] as RGBColor },
+            { name: "Normal", y: 25, color: [16, 185, 129] as RGBColor },
+            { name: "Overweight", y: 30, color: [245, 158, 11] as RGBColor },
+            { name: "Obese", y: 35, color: [239, 68, 68] as RGBColor }
           ];
           
           for (let i = 0; i < categories.length - 1; i++) {
@@ -566,13 +618,13 @@ export default function Profile() {
             if (endY < yPos + 10) continue; // Skip if out of chart area
             
             // Add category label
-            pdf.setTextColor(...categories[i].color);
+            pdf.setTextColor(categories[i].color[0], categories[i].color[1], categories[i].color[2]);
             pdf.text(categories[i].name, 180, (startY + endY) / 2);
           }
           
           // Add last category
           const lastCat = categories[categories.length - 1];
-          pdf.setTextColor(...lastCat.color);
+          pdf.setTextColor(lastCat.color[0], lastCat.color[1], lastCat.color[2]);
           pdf.text(lastCat.name, 180, yPos + 50 - ((lastCat.y / maxBmi) * 40) - 3);
           
           yPos += 70;
@@ -610,7 +662,7 @@ export default function Profile() {
           pdf.setDrawColor(...colors.weight);
           pdf.setLineWidth(1.5);
           
-          const weightPoints = [];
+          const weightPoints: ChartPoint[] = [];
           const weightBarWidth = 140 / weightValues.length;
           
           weightValues.forEach((weight, idx) => {
@@ -764,7 +816,7 @@ export default function Profile() {
           }
           
           // Add color indicator for record type
-          pdf.setFillColor(...rowColor);
+          pdf.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
           pdf.rect(15, yPos - 2, 3, 10, 'F');
           
           // Add thin border line between rows
@@ -780,7 +832,7 @@ export default function Profile() {
           pdf.text(displayType, 70, yPos + 3);
           
           pdf.setTextColor(100, 100, 100);
-          pdf.text(displayValue, 140, yPos + 3);
+          pdf.text(String(displayValue), 140, yPos + 3);
           
           yPos += 10;
         });
@@ -838,11 +890,11 @@ export default function Profile() {
   }
 
   // Get the latest values for each health metric
-  const getLatestMetric = (type) => {
+  const getLatestMetric = (type: string): HealthRecord | null => {
     const records = healthRecords.filter(r => r.record_type === type);
     if (records.length === 0) return null;
     
-    return records.sort((a, b) => new Date(b.record_date) - new Date(a.record_date))[0];
+    return records.sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime())[0];
   };
 
   const latestBMI = getLatestMetric('bmi');
@@ -1150,7 +1202,7 @@ export default function Profile() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {healthRecords
-                    .sort((a, b) => new Date(b.record_date) - new Date(a.record_date))
+                    .sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime())
                     .slice(0, 10)
                     .map((record, index) => {
                       // Format value based on record type
@@ -1196,7 +1248,7 @@ export default function Profile() {
                             {displayType}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {displayValue}
+                            {String(displayValue)}
                           </td>
                         </tr>
                       );
