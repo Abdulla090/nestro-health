@@ -276,14 +276,14 @@ export default function Profile() {
       const subtitle = `Health Profile: ${userName}`;
       pdf.text(subtitle, pdf.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
       
-      // Start y-position after header
+      // Start y-position after header with better spacing
       let yPos = 45;
       
       // Add report info
       pdf.setTextColor(100, 100, 100);
       pdf.setFontSize(10);
       pdf.text(`Generated on: ${new Date().toLocaleString()}`, 15, yPos);
-      yPos += 10;
+      yPos += 12; // Increased spacing
       
       // Add health overview title with fancy styling
       pdf.setDrawColor(59, 130, 246);
@@ -299,9 +299,9 @@ export default function Profile() {
       pdf.line(15, yPos + 10, pdf.internal.pageSize.getWidth() - 15, yPos + 10);
       
       pdf.setFont('helvetica', 'normal');
-      yPos += 20;
+      yPos += 22; // Increased spacing
       
-      // Enhanced visual stat box with more details
+      // Enhanced visual stat box with more details - fix text overlap
       const addDetailedStatBox = (
         title: string, 
         value: string, 
@@ -312,11 +312,11 @@ export default function Profile() {
       ) => {
         // Base box
         pdf.setFillColor(248, 250, 252);
-        pdf.roundedRect(15, y, 180, 35, 3, 3, 'F');
+        pdf.roundedRect(15, y, 180, 40, 3, 3, 'F'); // Increased height
         
         // Colored accent on left side
         pdf.setFillColor(color[0], color[1], color[2]);
-        pdf.rect(15, y, 7, 35, 'F');
+        pdf.rect(15, y, 7, 40, 'F'); // Match increased height
         
         // Feature title in colored box
         pdf.setFillColor(color[0], color[1], color[2], 0.2);
@@ -328,20 +328,25 @@ export default function Profile() {
         pdf.text(title, 42, y + 5.5, { align: 'center' });
         
         // Main value (large)
-        pdf.setFontSize(18);
+        pdf.setFontSize(16); // Slightly smaller to avoid overflow
         pdf.text(value, 42, y + 20);
         pdf.setFont('helvetica', 'normal');
         
         // Last updated info
         pdf.setFontSize(8);
         pdf.setTextColor(100, 100, 100);
-        pdf.text(description, 42, y + 28);
+        pdf.text(description, 42, y + 30); // Moved down for better spacing
         
         // Detailed information about the feature
         pdf.setTextColor(80, 80, 80);
         pdf.setFontSize(9);
-        const splitDetails = pdf.splitTextToSize(details, 100);
-        pdf.text(splitDetails, 95, y + 15);
+        const splitDetails = pdf.splitTextToSize(details, 100); // Create line breaks for long text
+        // Ensure the text doesn't overflow by limiting lines if needed
+        const maxLines = 3;
+        const truncatedDetails = splitDetails.length > maxLines ? 
+          [...splitDetails.slice(0, maxLines - 1), splitDetails[maxLines - 1] + '...'] : 
+          splitDetails;
+        pdf.text(truncatedDetails, 95, y + 15);
       };
       
       // Define colors for different metrics (in RGB format)
@@ -364,8 +369,14 @@ export default function Profile() {
         bloodPressure: "Blood pressure readings show systolic/diastolic pressure. Normal levels are important for cardiovascular health."
       };
       
-      // Add health metrics with enhanced visual elements and detailed information
+      // Check if we need a new page between each major section and before/after adding health metrics
       if (latestBMI) {
+        // Check if we need a page break
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         let bmiCategory = "";
         const bmi = latestBMI.record_value;
         if (bmi < 18.5) bmiCategory = "Underweight";
@@ -383,10 +394,15 @@ export default function Profile() {
           colors.bmi,
           `${featureDescriptions.bmi}\nYour value of ${latestBMI.record_value.toFixed(1)} places you in the ${bmiCategory} category.`
         );
-        yPos += 40;
+        yPos += 45; // Increased spacing between stat boxes
       }
       
       if (latestWeight) {
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         addDetailedStatBox(
           'Weight', 
           `${latestWeight.record_value} kg`, 
@@ -395,10 +411,15 @@ export default function Profile() {
           colors.weight,
           featureDescriptions.weight
         );
-        yPos += 40;
+        yPos += 45;
       }
       
       if (latestBodyFat) {
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         let category = "";
         const bf = latestBodyFat.record_value;
         // Simple categorization
@@ -416,10 +437,15 @@ export default function Profile() {
           colors.bodyFat,
           `${featureDescriptions.bodyFat}\nYour value of ${latestBodyFat.record_value.toFixed(1)}% is considered "${category}".`
         );
-        yPos += 40;
+        yPos += 45;
       }
       
       if (latestCalories) {
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         addDetailedStatBox(
           'Calories', 
           `${latestCalories.record_value} kcal`, 
@@ -428,10 +454,15 @@ export default function Profile() {
           colors.calories,
           `${featureDescriptions.calories}\nYour daily calorie need is approximately ${latestCalories.record_value} kcal.`
         );
-        yPos += 40;
+        yPos += 45;
       }
       
       if (latestWater) {
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         addDetailedStatBox(
           'Water', 
           `${latestWater.record_value} ml`, 
@@ -440,10 +471,15 @@ export default function Profile() {
           colors.water,
           `${featureDescriptions.water}\nYour recommended daily water intake is ${latestWater.record_value} ml.`
         );
-        yPos += 40;
+        yPos += 45;
       }
       
       if (latestBloodPressure) {
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
         let category = "";
         const systolic = latestBloodPressure.record_value;
         const diastolic = latestBloodPressure.record_value_2 || 0; // Default to 0 if undefined
@@ -463,7 +499,7 @@ export default function Profile() {
           colors.bloodPressure,
           `${featureDescriptions.bloodPressure}\nYour reading of ${latestBloodPressure.record_value}/${latestBloodPressure.record_value_2} mmHg is categorized as "${category}".`
         );
-        yPos += 40;
+        yPos += 45;
       }
       
       if (healthRecords.length === 0) {
@@ -478,13 +514,11 @@ export default function Profile() {
         yPos += 50;
       }
       
-      // Enhanced Charts Section - Add fancy header
-      if (healthRecords.length > 1) {
-        // Check if we need a new page
-        if (yPos > 230) {
-          pdf.addPage();
-          yPos = 20;
-        }
+      // Improved BMI chart with better spacing
+      if (chartData.bmi.length > 1) {
+        // Always add a new page for chart sections to avoid overlap
+        pdf.addPage();
+        yPos = 20;
         
         // Add charts section header
         pdf.setDrawColor(59, 130, 246);
@@ -502,220 +536,228 @@ export default function Profile() {
         pdf.setFont('helvetica', 'normal');
         yPos += 20;
         
-        // Improved visualization for BMI trend
-        if (chartData.bmi.length > 1) {
-          // Draw chart title and container
-          pdf.setFontSize(12);
-          pdf.setTextColor(0, 0, 0);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text("BMI Trend Analysis", 15, yPos);
-          pdf.setFont('helvetica', 'normal');
-          
-          // Draw chart background
-          pdf.setFillColor(245, 247, 250);
-          pdf.roundedRect(15, yPos + 5, 180, 60, 3, 3, 'F');
-          
-          // Get BMI values and dates for chart
-          const bmiValues = chartData.bmi.map(r => r.record_value);
-          const bmiDates = chartData.bmi.map(r => formatDate(r.record_date));
-          const maxBmi = Math.max(...bmiValues, 25) * 1.1; // Add 10% margin
-          
-          // Draw chart title and description
-          pdf.setFontSize(9);
-          pdf.setTextColor(100, 100, 100);
-          pdf.text("This chart shows your BMI trend over time. The healthy BMI range is 18.5-24.9.", 105, yPos + 15, { align: 'center' });
-          
-          // Draw axes labels
-          pdf.setFontSize(8);
-          pdf.text("BMI", 20, yPos + 35);
-          pdf.text("Date", 105, yPos + 60);
-          
-          // Draw Y-axis reference lines and labels
+        // Draw BMI chart with better spacing
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text("BMI Trend Analysis", 15, yPos);
+        pdf.setFont('helvetica', 'normal');
+        
+        // Increase chart height for better readability
+        pdf.setFillColor(245, 247, 250);
+        pdf.roundedRect(15, yPos + 5, 180, 70, 3, 3, 'F');
+        
+        // Get BMI values and dates for chart
+        const bmiValues = chartData.bmi.map(r => r.record_value);
+        const bmiDates = chartData.bmi.map(r => formatDate(r.record_date));
+        const maxBmi = Math.max(...bmiValues, 25) * 1.1; // Add 10% margin
+        
+        // Draw chart title and description with more spacing
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("This chart shows your BMI trend over time. The healthy BMI range is 18.5-24.9.", 105, yPos + 15, { align: 'center' });
+        
+        // Better positioning for axis labels
+        pdf.setFontSize(8);
+        pdf.text("BMI", 20, yPos + 35);
+        pdf.text("Date", 105, yPos + 65);
+        
+        // Draw horizontal grid lines with better spacing
+        const gridPositions = [18.5, 25, 30, 35];
+        gridPositions.forEach(gridValue => {
+          const lineY = yPos + 50 - ((gridValue / maxBmi) * 40);
           pdf.setDrawColor(220, 220, 220);
+          pdf.setLineDashPattern([2, 2], 0);
+          pdf.line(25, lineY, 175, lineY);
           
-          // Draw horizontal grid lines
-          const gridPositions = [18.5, 25, 30, 35];
-          gridPositions.forEach(gridValue => {
-            const lineY = yPos + 50 - ((gridValue / maxBmi) * 40);
-            pdf.setDrawColor(220, 220, 220);
-            pdf.setLineDashPattern([2, 2], 0);
-            pdf.line(25, lineY, 175, lineY);
-            
-            // Add label for reference line
-            pdf.setFontSize(6);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text(gridValue.toString(), 22, lineY);
-          });
-          
-          // Reset dash pattern
-          pdf.setLineDashPattern([], 0);
-          
-          // Draw X and Y axes
-          pdf.setDrawColor(150, 150, 150);
-          pdf.line(25, yPos + 50, 175, yPos + 50); // X-axis
-          pdf.line(25, yPos + 10, 25, yPos + 50); // Y-axis
-          
-          // Draw bars with connecting line
-          const barWidth = 140 / bmiValues.length;
-          const points: ChartPoint[] = [];
-          
-          // First draw connecting line to show trend
-          pdf.setDrawColor(colors.bmi[0], colors.bmi[1], colors.bmi[2]);
-          pdf.setLineWidth(1.5);
-          
-          bmiValues.forEach((bmi, idx) => {
-            const barHeight = (bmi / maxBmi) * 40;
-            const x = 30 + (idx * barWidth) + (barWidth / 2);
-            const y = yPos + 50 - barHeight;
-            points.push({ x, y });
-          });
-          
-          // Draw trend line
-          for (let i = 0; i < points.length - 1; i++) {
-            pdf.line(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
-          }
-          
-          // Draw bars and data points
-          bmiValues.forEach((bmi, idx) => {
-            const barHeight = (bmi / maxBmi) * 40;
-            const x = 30 + (idx * barWidth);
-            
-            // Draw bar
-            pdf.setFillColor(...colors.bmi, 0.3);
-            pdf.rect(x, yPos + 50 - barHeight, barWidth - 2, barHeight, 'F');
-            
-            // Draw data point
-            pdf.setFillColor(...colors.bmi);
-            pdf.circle(x + (barWidth / 2), yPos + 50 - barHeight, 2, 'F');
-            
-            // Add value on top of bar
-            pdf.setFontSize(7);
-            pdf.setTextColor(0, 0, 0);
-            pdf.text(bmi.toFixed(1), x + (barWidth / 2), yPos + 47 - barHeight, { align: 'center' });
-            
-            // Add date below
-            pdf.setFontSize(6);
-            pdf.setTextColor(100, 100, 100);
-            
-            // Rotate date labels if multiple dates to prevent overlap
-            pdf.text(bmiDates[idx], x + (barWidth / 2), yPos + 55, { align: 'center' });
-          });
-          
-          // Add categorizations
-          pdf.setFontSize(7);
-          
-          // Category zones with labels
-          const categories: Category[] = [
-            { name: "Underweight", y: 18.5, color: [59, 130, 246] as RGBColor },
-            { name: "Normal", y: 25, color: [16, 185, 129] as RGBColor },
-            { name: "Overweight", y: 30, color: [245, 158, 11] as RGBColor },
-            { name: "Obese", y: 35, color: [239, 68, 68] as RGBColor }
-          ];
-          
-          for (let i = 0; i < categories.length - 1; i++) {
-            const startY = yPos + 50 - ((categories[i].y / maxBmi) * 40);
-            const endY = yPos + 50 - ((categories[i+1].y / maxBmi) * 40);
-            if (endY < yPos + 10) continue; // Skip if out of chart area
-            
-            // Add category label
-            pdf.setTextColor(categories[i].color[0], categories[i].color[1], categories[i].color[2]);
-            pdf.text(categories[i].name, 180, (startY + endY) / 2);
-          }
-          
-          // Add last category
-          const lastCat = categories[categories.length - 1];
-          pdf.setTextColor(lastCat.color[0], lastCat.color[1], lastCat.color[2]);
-          pdf.text(lastCat.name, 180, yPos + 50 - ((lastCat.y / maxBmi) * 40) - 3);
-          
-          yPos += 70;
+          // Add label for reference line
+          pdf.setFontSize(6);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(gridValue.toString(), 22, lineY);
+        });
+        
+        // Reset dash pattern
+        pdf.setLineDashPattern([], 0);
+        
+        // Draw X and Y axes
+        pdf.setDrawColor(150, 150, 150);
+        pdf.line(25, yPos + 50, 175, yPos + 50); // X-axis
+        pdf.line(25, yPos + 10, 25, yPos + 50); // Y-axis
+        
+        // Calculate bar width based on number of data points
+        const barWidth = bmiValues.length <= 3 ? 30 : 140 / bmiValues.length;
+        const points: ChartPoint[] = [];
+        
+        // Prepare data points for trend line
+        bmiValues.forEach((bmi, idx) => {
+          const barHeight = (bmi / maxBmi) * 40;
+          const x = 30 + (idx * barWidth) + (barWidth / 2);
+          const y = yPos + 50 - barHeight;
+          points.push({ x, y });
+        });
+        
+        // Draw trend line
+        pdf.setDrawColor(colors.bmi[0], colors.bmi[1], colors.bmi[2]);
+        pdf.setLineWidth(1.5);
+        for (let i = 0; i < points.length - 1; i++) {
+          pdf.line(points[i].x, points[i].y, points[i+1].x, points[i+1].y);
         }
         
-        // Weight trend visualization similar to BMI
-        if (chartData.weight.length > 1) {
-          // Check if need new page
-          if (yPos > 220) {
-            pdf.addPage();
-            yPos = 20;
-          }
+        // Draw bars and data points with better spacing
+        bmiValues.forEach((bmi, idx) => {
+          const barHeight = (bmi / maxBmi) * 40;
+          const x = 30 + (idx * barWidth);
           
-          pdf.setFontSize(12);
+          // Draw bar
+          pdf.setFillColor(colors.bmi[0], colors.bmi[1], colors.bmi[2], 0.3);
+          pdf.rect(x, yPos + 50 - barHeight, barWidth - 2, barHeight, 'F');
+          
+          // Draw data point with better visibility
+          pdf.setFillColor(colors.bmi[0], colors.bmi[1], colors.bmi[2]);
+          pdf.circle(x + (barWidth / 2), yPos + 50 - barHeight, 2, 'F');
+          
+          // Add value on top of bar with proper positioning
+          pdf.setFontSize(7);
           pdf.setTextColor(0, 0, 0);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text("Weight Tracking", 15, yPos);
-          pdf.setFont('helvetica', 'normal');
+          pdf.text(bmi.toFixed(1), x + (barWidth / 2), yPos + 47 - barHeight, { align: 'center' });
           
-          // Similar chart rendering logic as BMI but with weight values and colors
-          pdf.setFillColor(245, 247, 250);
-          pdf.roundedRect(15, yPos + 5, 180, 50, 3, 3, 'F');
+          // Add date labels with alternating positions to prevent overlap
+          pdf.setFontSize(6);
+          pdf.setTextColor(100, 100, 100);
+          const dateText = bmiDates[idx];
           
-          const weightValues = chartData.weight.map(r => r.record_value);
-          const weightDates = chartData.weight.map(r => formatDate(r.record_date));
-          const maxWeight = Math.max(...weightValues) * 1.1;
-          const minWeight = Math.min(...weightValues) * 0.9;
-          const weightRange = maxWeight - minWeight;
-          
-          // Draw axes
-          pdf.setDrawColor(150, 150, 150);
-          pdf.line(25, yPos + 45, 175, yPos + 45); // X-axis
-          
-          // Draw connecting line for trend
-          pdf.setDrawColor(...colors.weight);
-          pdf.setLineWidth(1.5);
-          
-          const weightPoints: ChartPoint[] = [];
-          const weightBarWidth = 140 / weightValues.length;
-          
-          weightValues.forEach((weight, idx) => {
-            const normWeight = (weight - minWeight) / weightRange;
-            const barHeight = normWeight * 35;
-            const x = 30 + (idx * weightBarWidth) + (weightBarWidth / 2);
-            const y = yPos + 45 - barHeight;
-            weightPoints.push({ x, y });
-          });
-          
-          // Draw weight trend line
-          for (let i = 0; i < weightPoints.length - 1; i++) {
-            pdf.line(weightPoints[i].x, weightPoints[i].y, weightPoints[i+1].x, weightPoints[i+1].y);
+          // Alternate date positions based on index to avoid overlap
+          if (bmiValues.length > 3) {
+            if (idx % 2 === 0) {
+              pdf.text(dateText, x + (barWidth / 2), yPos + 55, { align: 'center' });
+            } else {
+              pdf.text(dateText, x + (barWidth / 2), yPos + 57, { align: 'center' });
+            }
+          } else {
+            pdf.text(dateText, x + (barWidth / 2), yPos + 55, { align: 'center' });
           }
+        });
+        
+        // Add BMI categories with better spacing
+        pdf.setFontSize(7);
+        const categories: Category[] = [
+          { name: "Underweight", y: 18.5, color: [59, 130, 246] as RGBColor },
+          { name: "Normal", y: 25, color: [16, 185, 129] as RGBColor },
+          { name: "Overweight", y: 30, color: [245, 158, 11] as RGBColor },
+          { name: "Obese", y: 35, color: [239, 68, 68] as RGBColor }
+        ];
+        
+        // Add category labels with proper spacing to avoid overlap
+        for (let i = 0; i < categories.length - 1; i++) {
+          const startY = yPos + 50 - ((categories[i].y / maxBmi) * 40);
+          const endY = yPos + 50 - ((categories[i+1].y / maxBmi) * 40);
+          if (endY < yPos + 10) continue; // Skip if out of chart area
           
-          // Draw weight bars and values
-          weightValues.forEach((weight, idx) => {
-            const normWeight = (weight - minWeight) / weightRange;
-            const barHeight = normWeight * 35;
-            const x = 30 + (idx * weightBarWidth);
-            
-            // Draw bar
-            pdf.setFillColor(...colors.weight, 0.3);
-            pdf.rect(x, yPos + 45 - barHeight, weightBarWidth - 2, barHeight, 'F');
-            
-            // Draw data point
-            pdf.setFillColor(...colors.weight);
-            pdf.circle(x + (weightBarWidth / 2), yPos + 45 - barHeight, 2, 'F');
-            
-            // Add weight value
-            pdf.setFontSize(7);
-            pdf.setTextColor(0, 0, 0);
-            pdf.text(weight.toString(), x + (weightBarWidth / 2), yPos + 42 - barHeight, { align: 'center' });
-            
-            // Add date
-            pdf.setFontSize(6);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text(weightDates[idx], x + (weightBarWidth / 2), yPos + 50, { align: 'center' });
-          });
-          
-          yPos += 60;
+          // Add category label with proper coloring
+          pdf.setTextColor(categories[i].color[0], categories[i].color[1], categories[i].color[2]);
+          pdf.text(categories[i].name, 180, (startY + endY) / 2);
         }
+        
+        // Add last category
+        const lastCat = categories[categories.length - 1];
+        pdf.setTextColor(lastCat.color[0], lastCat.color[1], lastCat.color[2]);
+        pdf.text(lastCat.name, 180, yPos + 50 - ((lastCat.y / maxBmi) * 40) - 3);
+        
+        yPos += 80; // Add extra spacing after chart
       }
       
-      // Add recent activity section if we have records
-      if (healthRecords.length > 0) {
-        // Check if we need a new page
+      // Weight trend visualization similar to BMI
+      if (chartData.weight.length > 1) {
+        // Check if need new page
         if (yPos > 200) {
           pdf.addPage();
           yPos = 20;
         }
         
-        // Add activity section header
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text("Weight Tracking", 15, yPos);
+        pdf.setFont('helvetica', 'normal');
+        
+        // Similar chart rendering logic as BMI but with weight values and colors
+        pdf.setFillColor(245, 247, 250);
+        pdf.roundedRect(15, yPos + 5, 180, 55, 3, 3, 'F'); // Increased height
+        
+        const weightValues = chartData.weight.map(r => r.record_value);
+        const weightDates = chartData.weight.map(r => formatDate(r.record_date));
+        const maxWeight = Math.max(...weightValues) * 1.1;
+        const minWeight = Math.min(...weightValues) * 0.9;
+        const weightRange = maxWeight - minWeight;
+        
+        // Add chart description
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("This chart shows your weight changes over time.", 105, yPos + 15, { align: 'center' });
+        
+        // Draw axes
+        pdf.setDrawColor(150, 150, 150);
+        pdf.line(25, yPos + 45, 175, yPos + 45); // X-axis
+        
+        // Draw connecting line for trend
+        pdf.setDrawColor(colors.weight[0], colors.weight[1], colors.weight[2]);
+        pdf.setLineWidth(1.5);
+        
+        const weightPoints: ChartPoint[] = [];
+        const weightBarWidth = 140 / weightValues.length;
+        
+        weightValues.forEach((weight, idx) => {
+          const normWeight = (weight - minWeight) / weightRange;
+          const barHeight = normWeight * 35;
+          const x = 30 + (idx * weightBarWidth) + (weightBarWidth / 2);
+          const y = yPos + 45 - barHeight;
+          weightPoints.push({ x, y });
+        });
+        
+        // Draw weight trend line
+        for (let i = 0; i < weightPoints.length - 1; i++) {
+          pdf.line(weightPoints[i].x, weightPoints[i].y, weightPoints[i+1].x, weightPoints[i+1].y);
+        }
+        
+        // Draw weight bars and values
+        weightValues.forEach((weight, idx) => {
+          const normWeight = (weight - minWeight) / weightRange;
+          const barHeight = normWeight * 35;
+          const x = 30 + (idx * weightBarWidth);
+          
+          // Draw bar
+          pdf.setFillColor(colors.weight[0], colors.weight[1], colors.weight[2], 0.3);
+          pdf.rect(x, yPos + 45 - barHeight, weightBarWidth - 2, barHeight, 'F');
+          
+          // Draw data point
+          pdf.setFillColor(colors.weight[0], colors.weight[1], colors.weight[2]);
+          pdf.circle(x + (weightBarWidth / 2), yPos + 45 - barHeight, 2, 'F');
+          
+          // Add weight value with better positioning
+          pdf.setFontSize(7);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(weight.toString(), x + (weightBarWidth / 2), yPos + 42 - barHeight, { align: 'center' });
+          
+          // Add date with alternate positioning to avoid overlap
+          pdf.setFontSize(6);
+          pdf.setTextColor(100, 100, 100);
+          if (weightValues.length > 3 && idx % 2 === 1) {
+            pdf.text(weightDates[idx], x + (weightBarWidth / 2), yPos + 52, { align: 'center' });
+          } else {
+            pdf.text(weightDates[idx], x + (weightBarWidth / 2), yPos + 50, { align: 'center' });
+          }
+        });
+        
+        yPos += 65; // Increased spacing
+      }
+      
+      // Add recent activity section if we have records
+      if (healthRecords.length > 0) {
+        // Always start the activity section on a new page to avoid overlap
+        pdf.addPage();
+        yPos = 20;
+        
+        // Add activity section header with proper spacing
         pdf.setDrawColor(59, 130, 246);
         pdf.setLineWidth(0.5);
         pdf.line(15, yPos, pdf.internal.pageSize.getWidth() - 15, yPos);
@@ -731,46 +773,46 @@ export default function Profile() {
         pdf.setFont('helvetica', 'normal');
         yPos += 20;
         
-        // Table header with colored background
+        // Table header with increased height for better readability
         pdf.setFillColor(59, 130, 246, 0.2);
-        pdf.rect(15, yPos, 180, 8, 'F');
+        pdf.rect(15, yPos, 180, 10, 'F');
         
         pdf.setFontSize(10);
         pdf.setTextColor(0, 0, 0);
-        pdf.text("Date", 20, yPos + 5);
-        pdf.text("Measurement", 70, yPos + 5);
-        pdf.text("Value", 140, yPos + 5);
+        pdf.text("Date", 25, yPos + 6);
+        pdf.text("Measurement", 80, yPos + 6);
+        pdf.text("Value", 150, yPos + 6);
         
-        yPos += 10;
+        yPos += 12; // Increase spacing after header
         
-        // Table rows
+        // Table rows with better spacing between rows
         const sortedRecords = [...healthRecords]
           .sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime())
           .slice(0, 10);
           
         sortedRecords.forEach((record, index) => {
-          // Ensure we don't go off the page
-          if (yPos > 270) {
+          // Ensure we don't go off the page - reduced threshold for more margin
+          if (yPos > 250) {
             pdf.addPage();
             yPos = 20;
             
             // Re-add table header on new page
             pdf.setFillColor(59, 130, 246, 0.2);
-            pdf.rect(15, yPos, 180, 8, 'F');
+            pdf.rect(15, yPos, 180, 10, 'F');
             
             pdf.setFontSize(10);
             pdf.setTextColor(0, 0, 0);
-            pdf.text("Date", 20, yPos + 5);
-            pdf.text("Measurement", 70, yPos + 5);
-            pdf.text("Value", 140, yPos + 5);
+            pdf.text("Date", 25, yPos + 6);
+            pdf.text("Measurement", 80, yPos + 6);
+            pdf.text("Value", 150, yPos + 6);
             
-            yPos += 10;
+            yPos += 12;
           }
           
-          // Format data for display
-          let displayValue;
-          let displayType;
-          let rowColor;
+          // Format data for display with defaults for TypeScript
+          let displayValue = "";
+          let displayType = "";
+          let rowColor: RGBColor = [100, 100, 100]; // Default color
           
           switch(record.record_type) {
             case 'bmi':
@@ -804,41 +846,41 @@ export default function Profile() {
               rowColor = colors.bloodPressure;
               break;
             default:
-              displayValue = record.record_value;
+              displayValue = String(record.record_value);
               displayType = record.record_type;
               rowColor = [100, 100, 100];
           }
           
-          // Add alternating background color
+          // Add alternating background color for better readability
           if (index % 2 === 0) {
             pdf.setFillColor(245, 247, 250);
-            pdf.rect(15, yPos - 2, 180, 10, 'F');
+            pdf.rect(15, yPos - 2, 180, 12, 'F');
           }
           
           // Add color indicator for record type
           pdf.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
-          pdf.rect(15, yPos - 2, 3, 10, 'F');
+          pdf.rect(15, yPos - 2, 4, 12, 'F');
           
-          // Add thin border line between rows
+          // Add thin border line between rows for better separation
           pdf.setDrawColor(240, 240, 240);
-          pdf.line(15, yPos + 6, 195, yPos + 6);
+          pdf.line(15, yPos + 8, 195, yPos + 8);
           
-          // Add row data
+          // Add row data with proper alignment and spacing
           pdf.setFontSize(9);
           pdf.setTextColor(100, 100, 100);
-          pdf.text(formatDate(record.record_date), 20, yPos + 3);
+          pdf.text(formatDate(record.record_date), 25, yPos + 4);
           
           pdf.setTextColor(0, 0, 0);
-          pdf.text(displayType, 70, yPos + 3);
+          pdf.text(displayType, 80, yPos + 4);
           
           pdf.setTextColor(100, 100, 100);
-          pdf.text(String(displayValue), 140, yPos + 3);
+          pdf.text(String(displayValue), 150, yPos + 4);
           
-          yPos += 10;
+          yPos += 14; // Increase row height for better readability
         });
       }
       
-      // Add footer to all pages
+      // Add footer to all pages with better positioning
       const totalPages = pdf.getNumberOfPages();
       for(let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
@@ -847,13 +889,17 @@ export default function Profile() {
         pdf.setDrawColor(200, 200, 200);
         pdf.rect(5, 5, pdf.internal.pageSize.getWidth() - 10, pdf.internal.pageSize.getHeight() - 10, 'S');
         
-        // Add footer text
+        // Add footer background for better readability
+        pdf.setFillColor(248, 250, 252);
+        pdf.rect(0, pdf.internal.pageSize.getHeight() - 15, pdf.internal.pageSize.getWidth(), 15, 'F');
+        
+        // Add footer text with improved positioning
         pdf.setFontSize(8);
         pdf.setTextColor(156, 163, 175);
         pdf.text(
           `Generated on ${new Date().toLocaleString()} | HealthTrack | Page ${i} of ${totalPages}`, 
           pdf.internal.pageSize.getWidth() / 2, 
-          pdf.internal.pageSize.getHeight() - 10, 
+          pdf.internal.pageSize.getHeight() - 7, 
           { align: 'center' }
         );
       }
@@ -1035,248 +1081,36 @@ export default function Profile() {
             
             {latestBloodPressure && (
               <StatCard 
-                icon={<HeartIcon className="h-6 w-6 text-purple-600" />}
+                icon={<HeartIcon className="h-6 w-6 text-pink-600" />}
                 title={t('nav.bloodPressure') || 'Blood Pressure'}
-                value={`${latestBloodPressure.record_value}/${latestBloodPressure.record_value_2}`}
+                value={`${latestBloodPressure.record_value}/${latestBloodPressure.record_value_2} mmHg`}
                 description={
                   `${t('profile.lastUpdated') || 'Last updated'}: ${formatDate(latestBloodPressure.record_date)}`
                 }
-                color="border-purple-500"
+                color="border-pink-500"
               />
             )}
-            
-            {/* Show placeholders if no data */}
-            {healthRecords.length === 0 && (
-              <>
-                <StatCard 
-                  icon={<ChartBarIcon className="h-6 w-6 text-blue-600" />}
-                  title={t('nav.bmiCalculator') || 'BMI'}
-                  value={t('profile.noData') || 'No data yet'}
-                  description={t('profile.tryCalculator') || 'Try the calculator to get started'}
-                  color="border-blue-500"
-                />
-                
-                <StatCard 
-                  icon={<ScaleIcon className="h-6 w-6 text-green-600" />}
-                  title={t('nav.idealWeight') || 'Weight'}
-                  value={t('profile.noData') || 'No data yet'}
-                  description={t('profile.tryCalculator') || 'Try the calculator to get started'}
-                  color="border-green-500"
-                />
-                
-                <StatCard 
-                  icon={<FireIcon className="h-6 w-6 text-red-600" />}
-                  title={t('nav.calorieCalculator') || 'Calories'}
-                  value={t('profile.noData') || 'No data yet'}
-                  description={t('profile.tryCalculator') || 'Try the calculator to get started'}
-                  color="border-red-500"
-                />
-              </>
-            )}
           </div>
         </div>
         
-        {/* Health Trends Section - Only shown if data exists */}
-        {healthRecords.length > 0 ? (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {t('profile.healthTrends') || 'Health Trends'}
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {chartData.bmi.length > 0 && (
-                <BarChart 
-                  data={chartData.bmi.map(r => r.record_value)}
-                  labels={chartData.bmi.map(r => formatDate(r.record_date))}
-                  colors={['bg-blue-600', 'bg-blue-500', 'bg-blue-400', 'bg-blue-300', 'bg-blue-200']}
-                  title={t('nav.bmiCalculator') || 'BMI Over Time'}
-                  unit=""
-                />
-              )}
-              
-              {chartData.weight.length > 0 && (
-                <BarChart 
-                  data={chartData.weight.map(r => r.record_value)}
-                  labels={chartData.weight.map(r => formatDate(r.record_date))}
-                  colors={['bg-green-600', 'bg-green-500', 'bg-green-400', 'bg-green-300', 'bg-green-200']}
-                  title={t('nav.idealWeight') || 'Weight Over Time'}
-                  unit="kg"
-                />
-              )}
-              
-              {chartData.bodyFat.length > 0 && (
-                <BarChart 
-                  data={chartData.bodyFat.map(r => r.record_value)}
-                  labels={chartData.bodyFat.map(r => formatDate(r.record_date))}
-                  colors={['bg-orange-600', 'bg-orange-500', 'bg-orange-400', 'bg-orange-300', 'bg-orange-200']}
-                  title={t('nav.bodyFat') || 'Body Fat Over Time'}
-                  unit="%"
-                />
-              )}
-              
-              {chartData.calories.length > 0 && (
-                <BarChart 
-                  data={chartData.calories.map(r => r.record_value)}
-                  labels={chartData.calories.map(r => formatDate(r.record_date))}
-                  colors={['bg-red-600', 'bg-red-500', 'bg-red-400', 'bg-red-300', 'bg-red-200']}
-                  title={t('nav.calorieCalculator') || 'Calories Over Time'}
-                  unit="kcal"
-                />
-              )}
-            </div>
-          </div>
-        ) : null}
-        
-        {/* Quick Actions */}
+        {/* Health Trends and Visualizations */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {t('profile.quickActions') || 'Quick Actions'}
+            {t('profile.healthTrends') || 'Health Trends and Visualizations'}
           </h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Link href="/bmi" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                <ChartBarIcon className="h-6 w-6 text-blue-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.bmiCalculator') || 'BMI Calculator'}</p>
-            </Link>
-            
-            <Link href="/calories" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-2">
-                <FireIcon className="h-6 w-6 text-red-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.calorieCalculator') || 'Calorie Calculator'}</p>
-            </Link>
-            
-            <Link href="/ideal-weight" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                <ScaleIcon className="h-6 w-6 text-green-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.idealWeight') || 'Ideal Weight'}</p>
-            </Link>
-            
-            <Link href="/body-fat" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-                <ChartBarIcon className="h-6 w-6 text-orange-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.bodyFat') || 'Body Fat'}</p>
-            </Link>
-            
-            <Link href="/water-intake" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center mb-2">
-                <BeakerIcon className="h-6 w-6 text-cyan-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.waterIntake') || 'Water Intake'}</p>
-            </Link>
-            
-            <Link href="/blood-pressure" className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-                <HeartIcon className="h-6 w-6 text-purple-600" />
-              </div>
-              <p className="text-sm font-medium">{t('nav.bloodPressure') || 'Blood Pressure'}</p>
-            </Link>
-          </div>
+          {/* Add charts and visualizations here */}
         </div>
         
-        {/* Health History */}
-        {healthRecords.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {t('profile.recentActivity') || 'Recent Activity'}
-            </h2>
-            
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('profile.date') || 'Date'}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('profile.measurement') || 'Measurement'}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('profile.value') || 'Value'}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {healthRecords
-                    .sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime())
-                    .slice(0, 10)
-                    .map((record, index) => {
-                      // Format value based on record type
-                      let displayValue;
-                      let displayType;
-                      
-                      switch(record.record_type) {
-                        case 'bmi':
-                          displayValue = record.record_value.toFixed(1);
-                          displayType = t('nav.bmiCalculator') || 'BMI';
-                          break;
-                        case 'weight':
-                          displayValue = `${record.record_value} kg`;
-                          displayType = t('nav.idealWeight') || 'Weight';
-                          break;
-                        case 'body_fat':
-                          displayValue = `${record.record_value.toFixed(1)}%`;
-                          displayType = t('nav.bodyFat') || 'Body Fat';
-                          break;
-                        case 'calories':
-                          displayValue = `${record.record_value} kcal`;
-                          displayType = t('nav.calorieCalculator') || 'Calories';
-                          break;
-                        case 'water':
-                          displayValue = `${record.record_value} ml`;
-                          displayType = t('nav.waterIntake') || 'Water Intake';
-                          break;
-                        case 'blood_pressure':
-                          displayValue = `${record.record_value}/${record.record_value_2} mmHg`;
-                          displayType = t('nav.bloodPressure') || 'Blood Pressure';
-                          break;
-                        default:
-                          displayValue = record.record_value;
-                          displayType = record.record_type;
-                      }
-                      
-                      return (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatDate(record.record_date)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {displayType}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {String(displayValue)}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        
-        {/* Empty state if no health records */}
-        {healthRecords.length === 0 && (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-              <ChartBarIcon className="h-8 w-8 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
-              {t('profile.noHealthData') || 'No health data yet'}
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              {t('profile.startUsingCalculators') || 'Start using our health calculators to track your progress and see your data here.'}
-            </p>
-            <Link href="/" className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-              {t('profile.exploreCalculators') || 'Explore Calculators'}
-            </Link>
-          </div>
-        )}
+        {/* Activity History */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            {t('profile.activityHistory') || 'Activity History'}
+          </h2>
+          
+          {/* Add activity history section here */}
+        </div>
       </div>
     </motion.div>
   );
-} 
+}
