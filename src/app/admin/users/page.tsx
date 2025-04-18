@@ -1,256 +1,246 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
-import { getAllProfiles, type Profile } from '@/lib/supabase';
+import { formatDistanceToNow } from 'date-fns';
+
+interface User {
+  id: string;
+  username: string;
+  department: string;
+  stage: string;
+  joinDate: string;
+  status: 'active' | 'inactive';
+  recordCount: number;
+}
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<(Profile & { status: string, recordCount: number })[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: 'ascending' | 'descending';
-  }>({
-    key: 'created_at',
-    direction: 'descending'
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [stageFilter, setStageFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'asc' });
+
+  // Departments list (matching the profile creation options)
+  const departments = [
+    { value: "all", label: "All Departments" },
+    { value: "Computer Science", label: "Computer Science" },
+    { value: "Information Technology", label: "Information Technology" },
+    { value: "Business Administration", label: "Business Administration" },
+    { value: "Law", label: "Law" },
+    { value: "Medicine", label: "Medicine" },
+    { value: "Engineering", label: "Engineering" },
+    { value: "Mathematics", label: "Mathematics" },
+    { value: "Physics", label: "Physics" },
+    { value: "Chemistry", label: "Chemistry" },
+    { value: "Biology", label: "Biology" },
+    { value: "Nature", label: "Nature" },
+    { value: "Geology", label: "Geology" }
+  ];
+
+  // Stages list
+  const stages = [
+    { value: "all", label: "All Stages" },
+    { value: "First", label: "First" },
+    { value: "Second", label: "Second" },
+    { value: "Third", label: "Third" },
+    { value: "Fourth", label: "Fourth" },
+    { value: "Fifth", label: "Fifth" },
+    { value: "Sixth", label: "Sixth" }
+  ];
 
   useEffect(() => {
-    async function fetchUsers() {
+    const fetchUsers = async () => {
       setLoading(true);
       try {
-        const { data, error } = await getAllProfiles();
-        
-        if (error) {
-          console.error("Error fetching users:", error);
-          return;
-        }
-        
-        // Add status (active/inactive) based on last activity
-        // And placeholder recordCount until we implement join query
-        const enhancedUsers = data.map(user => {
-          const daysSinceCreation = Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24));
-          const status = daysSinceCreation < 30 ? "active" : "inactive";
-          
-          return {
-            ...user,
-            status,
-            recordCount: Math.floor(Math.random() * 20) // Placeholder until we implement proper join
-          };
-        });
-        
-        setUsers(enhancedUsers);
+        // Simulated API call - replace with actual API call
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+        setUsers(data);
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error('Error fetching users:', error);
+        // For demo, using mock data
+        const mockUsers = [
+          {
+            id: '1',
+            username: 'John Doe',
+            department: 'Computer Science',
+            stage: 'Third',
+            joinDate: '2024-01-15',
+            status: 'active',
+            recordCount: 5
+          },
+          // Add more mock users here
+        ];
+        setUsers(mockUsers);
       } finally {
         setLoading(false);
       }
-    }
-    
+    };
+
     fetchUsers();
   }, []);
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  const formatDate = (date: string) => {
+    try {
+      return formatDistanceToNow(new Date(date), { addSuffix: true });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
-  // Handle sorting
   const handleSort = (key: string) => {
     setSortConfig({
       key,
-      direction: 
-        sortConfig.key === key && sortConfig.direction === 'ascending'
-          ? 'descending'
-          : 'ascending'
+      direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc'
     });
   };
 
-  // Filter and sort users
   const filteredAndSortedUsers = users
     .filter(user => {
-      // Apply search filter
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = 
-        (user.username?.toLowerCase().includes(searchLower) ?? false) ||
-        (user.full_name?.toLowerCase().includes(searchLower) ?? false);
-      
-      // Apply status filter
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
+      const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDepartment = departmentFilter === 'all' || user.department === departmentFilter;
+      const matchesStage = stageFilter === 'all' || user.stage === stageFilter;
+      return matchesSearch && matchesDepartment && matchesStage;
     })
     .sort((a, b) => {
-      // Apply sorting
-      const direction = sortConfig.direction === 'ascending' ? 1 : -1;
-      
-      switch (sortConfig.key) {
-        case 'username':
-          return direction * ((a.username || '').localeCompare(b.username || ''));
-        case 'email':
-          return direction * ((a.email || '').localeCompare(b.email || ''));
-        case 'created_at':
-          return direction * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        case 'status':
-          return direction * (a.status.localeCompare(b.status));
-        case 'recordCount':
-          return direction * (a.recordCount - b.recordCount);
-        default:
-          return 0;
-      }
+      const direction = sortConfig.direction === 'asc' ? 1 : -1;
+      if (a[sortConfig.key] < b[sortConfig.key]) return -1 * direction;
+      if (a[sortConfig.key] > b[sortConfig.key]) return 1 * direction;
+      return 0;
     });
 
-  // Get sort icons
-  const getSortIcon = (key: string) => {
-    if (sortConfig.key !== key) return '↕';
-    return sortConfig.direction === 'ascending' ? '↑' : '↓';
-  };
-
-  // Get status color
-  const getStatusColor = (status: string) => {
-    return status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-  };
+  // Group users by department and stage
+  const groupedUsers = filteredAndSortedUsers.reduce((acc, user) => {
+    const key = `${user.department}-${user.stage}`;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(user);
+    return acc;
+  }, {} as Record<string, User[]>);
 
   return (
     <AdminLayout>
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Users</h1>
-          <p className="text-gray-600">Manage user accounts</p>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <button
-            className="btn-primary"
-          >
-            Export Users
-          </button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Users Management</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <input
+                type="text"
+                placeholder="Search users..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+              >
+                {departments.map((dept) => (
+                  <option key={dept.value} value={dept.value}>
+                    {dept.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+              >
+                {stages.map((stage) => (
+                  <option key={stage.value} value={stage.value}>
+                    {stage.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
         </div>
-      </div>
 
-      {/* User Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600">Loading users...</p>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('username')}
-                  >
-                    User {getSortIcon('username')}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('created_at')}
-                  >
-                    Join Date {getSortIcon('created_at')}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('status')}
-                  >
-                    Status {getSortIcon('status')}
-                  </th>
-                  <th 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('recordCount')}
-                  >
-                    Records {getSortIcon('recordCount')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAndSortedUsers.length > 0 ? (
-                  filteredAndSortedUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                            {user.avatar_url ? (
-                              <img className="h-10 w-10 rounded-full" src={user.avatar_url} alt="" />
-                            ) : (
-                              <span className="text-indigo-600 font-semibold text-lg">
-                                {user.username?.[0] || user.full_name?.[0] || '?'}
+          <div className="space-y-8">
+            {Object.entries(groupedUsers).map(([key, groupUsers]) => {
+              const [department, stage] = key.split('-');
+              return (
+                <div key={key} className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {department} - Stage {stage}
+                    </h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleSort('username')}
+                          >
+                            User
+                            {sortConfig.key === 'username' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'asc' ? '↑' : '↓'}
                               </span>
                             )}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.full_name || user.username}</div>
-                            <div className="text-sm text-gray-500">{user.username}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(user.created_at)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}>
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.recordCount}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <button className="text-indigo-600 hover:text-indigo-900 px-2">
-                          View
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-900 px-2">
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">
-                      No users found matching your search criteria
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Join Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Records
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {groupUsers.map((user) => (
+                          <tr key={user.id}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-500">{formatDate(user.joinDate)}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {user.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {user.recordCount}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button className="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                              <button className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

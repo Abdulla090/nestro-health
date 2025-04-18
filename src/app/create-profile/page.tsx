@@ -29,7 +29,9 @@ export default function CreateProfilePage() {
     { value: "Mathematics", label: "Mathematics" },
     { value: "Physics", label: "Physics" },
     { value: "Chemistry", label: "Chemistry" },
-    { value: "Biology", label: "Biology" }
+    { value: "Biology", label: "Biology" },
+    { value: "Nature", label: "Nature" },
+    { value: "Geology", label: "Geology" }
   ];
 
   // Stages

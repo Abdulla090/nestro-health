@@ -16,9 +16,39 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   const router = useRouter();
 
   const [name, setName] = useState('');
+  const [department, setDepartment] = useState('');
+  const [stage, setStage] = useState('');
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [savedProfiles, setSavedProfiles] = useState<string[]>([]);
+
+  // Departments
+  const departments = [
+    { value: "", label: "Select Department" },
+    { value: "Computer Science", label: "Computer Science" },
+    { value: "Information Technology", label: "Information Technology" },
+    { value: "Business Administration", label: "Business Administration" },
+    { value: "Law", label: "Law" },
+    { value: "Medicine", label: "Medicine" },
+    { value: "Engineering", label: "Engineering" },
+    { value: "Mathematics", label: "Mathematics" },
+    { value: "Physics", label: "Physics" },
+    { value: "Chemistry", label: "Chemistry" },
+    { value: "Biology", label: "Biology" },
+    { value: "Nature", label: "Nature" },
+    { value: "Geology", label: "Geology" }
+  ];
+
+  // Stages
+  const stages = [
+    { value: "", label: "Select Stage" },
+    { value: "First", label: "First" },
+    { value: "Second", label: "Second" },
+    { value: "Third", label: "Third" },
+    { value: "Fourth", label: "Fourth" },
+    { value: "Fifth", label: "Fifth" },
+    { value: "Sixth", label: "Sixth" }
+  ];
 
   // Load saved profile names from localStorage
   React.useEffect(() => {
@@ -46,11 +76,21 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
       setError(t('auth.nameRequired') || 'Name is required');
       return;
     }
+
+    if (!department) {
+      setError('Department is required');
+      return;
+    }
+
+    if (!stage) {
+      setError('Stage is required');
+      return;
+    }
     
     try {
       setIsCreating(true);
       console.log('Calling createProfile function...');
-      const { success, error } = await createProfile(name);
+      const { success, error } = await createProfile(name, department, stage);
       console.log('Profile creation result:', { success, error });
       
       if (!success) {
@@ -123,7 +163,7 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
             {t('auth.createProfile') || 'Create Profile'}
           </h2>
           <p className="text-sm text-gray-600">
-            {t('auth.enterName') || 'Please enter your name to create a profile'}
+            {t('auth.enterName') || 'Please enter your information to create a profile'}
           </p>
         </div>
 
@@ -148,6 +188,46 @@ const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+          </div>
+
+          <div>
+            <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
+              Department
+            </label>
+            <select
+              id="department"
+              name="department"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            >
+              {departments.map((dept) => (
+                <option key={dept.value} value={dept.value}>
+                  {dept.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-2">
+              Stage
+            </label>
+            <select
+              id="stage"
+              name="stage"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={stage}
+              onChange={(e) => setStage(e.target.value)}
+            >
+              {stages.map((stg) => (
+                <option key={stg.value} value={stg.value}>
+                  {stg.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
