@@ -1,13 +1,26 @@
 {
+  "version": 2,
   "github": {
-    "silent": true
+    "silent": true,
+    "enabled": true
   },
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
   "images": {
     "sizes": [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     "remotePatterns": []
   },
-  "crons": [],
-  "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install --silent"
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key"
+  },
+  "builds": [
+    {
+      "src": "next.config.js",
+      "use": "@vercel/next"
+    }
+  ]
 } 
