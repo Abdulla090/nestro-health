@@ -33,7 +33,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   getProfile: () => Promise<Profile | null>;
   updateProfile: (data: Partial<Profile>) => Promise<{ success: boolean; error?: any }>;
-  createProfile: (name: string) => Promise<{ success: boolean; error?: any }>;
+  createProfile: (name: string, department?: string, stage?: string) => Promise<{ success: boolean; error?: any }>;
   loadProfileByName: (name: string) => Promise<{ success: boolean; error?: any }>;
   setProfile: (profile: Profile | null) => void;
 }
@@ -218,8 +218,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Create profile with just a name
-  const createProfileWithName = async (name: string) => {
+  // Create profile with name, department, and stage
+  const createProfileWithName = async (name: string, department?: string, stage?: string) => {
     if (!name.trim()) {
       return { success: false, error: 'Name is required' };
     }
@@ -227,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      console.log('Creating profile with name:', name);
+      console.log('Creating profile with:', { name, department, stage });
       
       // Check if profile with this name already exists
       const { data: existingProfile, error: searchError } = await getProfileByName(name);
@@ -237,6 +237,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Profile already exists, using it:', existingProfile);
         setProfile(existingProfile);
         localStorage.setItem('profileId', existingProfile.id);
+        setLoading(false);
         return { success: true };
       }
       
@@ -246,38 +247,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Create new profile
       console.log('Creating new profile...');
-      const { error, id } = await createSimpleProfile(name);
+      const { error, id } = await createSimpleProfile(name, department, stage);
       
-      if (error) {
+      if (error || !id) {
         console.error('Error creating profile:', error);
-        setError(error.message);
-        return { success: false, error };
+        setError(error?.message || 'Failed to create profile');
+        setLoading(false);
+        return { success: false, error: error?.message || 'Failed to create profile' };
       }
+
+      // Fetch the newly created profile
+      const { data: newProfile, error: fetchError } = await getProfile(id);
       
-      if (id) {
-        console.log('New profile created with ID:', id);
-        
-        // Get the newly created profile
-        const { data: newProfile } = await getProfile(id);
-        if (newProfile) {
-          console.log('New profile loaded:', newProfile);
-          setProfile(newProfile);
-          localStorage.setItem('profileId', id);
-        } else {
-          console.error('Could not find newly created profile');
-        }
-      } else {
-        console.error('No ID returned from profile creation');
-        return { success: false, error: { message: 'Failed to create profile' } };
+      if (fetchError || !newProfile) {
+        console.error('Error fetching new profile:', fetchError);
+        setError(fetchError?.message || 'Failed to fetch new profile');
+        setLoading(false);
+        return { success: false, error: fetchError?.message || 'Failed to fetch new profile' };
       }
-      
+
+      // Set the profile and store the ID
+      console.log('Setting new profile:', newProfile);
+      setProfile(newProfile);
+      localStorage.setItem('profileId', id);
+      setLoading(false);
       return { success: true };
     } catch (err: any) {
-      console.error('Exception in createProfileWithName:', err);
-      setError(err.message || 'Failed to create profile');
-      return { success: false, error: err };
-    } finally {
+      console.error('Error in createProfileWithName:', err);
+      setError(err.message || 'An error occurred creating the profile');
       setLoading(false);
+      return { success: false, error: err };
     }
   };
 
@@ -355,7 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(profile);
   };
 
-  const value: AuthContextType = {
+  const value = {
     user,
     profile,
     loading,
@@ -368,7 +367,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateProfile: updateUserProfile,
     createProfile: createProfileWithName,
     loadProfileByName,
-    setProfile: setProfileData
+    setProfile: setProfileData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

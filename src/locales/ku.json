@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "MedTracker",
+    "appName": "Nestro Health",
     "appTagline": "چاودێریکردنی تەندروستی",
     "success": "سەرکەوتن",
     "cancel": "هەڵوەشاندنەوە",
@@ -104,7 +104,7 @@
     "exportSuccess": "پرۆفایل بە سەرکەوتوویی هەناردە کرا",
     "exportError": "هەناردنی پرۆفایل سەرکەوتوو نەبوو",
     "healthProfile": "پرۆفایلی تەندروستی",
-    "generatedBy": "دروستکراوە لەلایەن HealthTrack",
+    "generatedBy": "دروستکراوە لەلایەن Nestro Health",
     "recordType": "جۆری تۆمار",
     "recordDate": "بەروار",
     "recordValue": "بەها",

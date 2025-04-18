@@ -11,9 +11,37 @@ export default function CreateProfilePage() {
   const router = useRouter();
 
   const [name, setName] = useState('');
+  const [department, setDepartment] = useState('');
+  const [stage, setStage] = useState('');
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [savedProfiles, setSavedProfiles] = useState<string[]>([]);
+
+  // Departments
+  const departments = [
+    { value: "", label: "Select Department" },
+    { value: "Computer Science", label: "Computer Science" },
+    { value: "Information Technology", label: "Information Technology" },
+    { value: "Business Administration", label: "Business Administration" },
+    { value: "Law", label: "Law" },
+    { value: "Medicine", label: "Medicine" },
+    { value: "Engineering", label: "Engineering" },
+    { value: "Mathematics", label: "Mathematics" },
+    { value: "Physics", label: "Physics" },
+    { value: "Chemistry", label: "Chemistry" },
+    { value: "Biology", label: "Biology" }
+  ];
+
+  // Stages
+  const stages = [
+    { value: "", label: "Select Stage" },
+    { value: "First", label: "First" },
+    { value: "Second", label: "Second" },
+    { value: "Third", label: "Third" },
+    { value: "Fourth", label: "Fourth" },
+    { value: "Fifth", label: "Fifth" },
+    { value: "Sixth", label: "Sixth" }
+  ];
 
   // Redirect if already has a profile
   useEffect(() => {
@@ -55,11 +83,21 @@ export default function CreateProfilePage() {
       setError(t('auth.nameRequired'));
       return;
     }
+
+    if (!department) {
+      setError('Department is required');
+      return;
+    }
+
+    if (!stage) {
+      setError('Stage is required');
+      return;
+    }
     
     try {
       setIsCreating(true);
-      console.log('Creating profile with name:', name);
-      const { success, error } = await createProfile(name);
+      console.log('Creating profile with name:', name, 'department:', department, 'stage:', stage);
+      const { success, error } = await createProfile(name, department, stage);
       console.log('Profile creation result:', success, error);
       
       if (!success) {
@@ -159,6 +197,46 @@ export default function CreateProfilePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
+                Department
+              </label>
+              <select
+                id="department"
+                name="department"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                {departments.map((dept) => (
+                  <option key={dept.value} value={dept.value}>
+                    {dept.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-2">
+                Stage
+              </label>
+              <select
+                id="stage"
+                name="stage"
+                required
+                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+              >
+                {stages.map((stg) => (
+                  <option key={stg.value} value={stg.value}>
+                    {stg.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

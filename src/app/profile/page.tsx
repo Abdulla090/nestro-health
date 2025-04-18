@@ -144,7 +144,11 @@ export default function Profile() {
       return;
     }
 
-    if (profile) {
+    const loadProfileData = async () => {
+      if (!profile) {
+        return;
+      }
+
       console.log('Profile loaded:', profile);
       
       // Clear any redirect flags since we're now on the profile page
@@ -152,77 +156,75 @@ export default function Profile() {
       
       setUserName(profile.username || profile.full_name || '');
       
-      // Load health records
-      const loadHealthRecords = async () => {
-        try {
-          // Check if profile has a valid ID before proceeding
-          if (!profile || !profile.id) {
-            console.error('Profile ID is missing or invalid');
-            return;
-          }
-          
-          console.log('Fetching health records for profile ID:', profile.id);
-          const { data, error } = await getHealthRecords(profile.id);
-          
-          if (error) {
-            console.error('Error loading health records:', error);
-            return;
-          }
-          
-          if (!data) {
-            console.log('No health records data returned');
-            setHealthRecords([]);
-            return;
-          }
-          
-          console.log(`Loaded ${data.length} health records`);
-          setHealthRecords(data || []);
-          
-          if (data && data.length > 0) {
-            // Process data for charts
-            const bmiData = data.filter(r => r.record_type === 'bmi')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-              
-            const weightData = data.filter(r => r.record_type === 'weight')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-              
-            const caloriesData = data.filter(r => r.record_type === 'calories')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-              
-            const waterData = data.filter(r => r.record_type === 'water')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-              
-            const bodyFatData = data.filter(r => r.record_type === 'body_fat')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-              
-            const bloodPressureData = data.filter(r => r.record_type === 'blood_pressure')
-              .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
-              .slice(-5);
-            
-            setChartData({
-              bmi: bmiData,
-              weight: weightData,
-              calories: caloriesData,
-              water: waterData,
-              bodyFat: bodyFatData,
-              bloodPressure: bloodPressureData
-            });
-          }
-        } catch (err: unknown) {
-          console.error('Caught error in loadHealthRecords:', err);
-          setError(err instanceof Error ? err.message : 'Failed to load health records');
+      try {
+        // Check if profile has a valid ID before proceeding
+        if (!profile.id) {
+          console.error('Profile ID is missing or invalid');
+          setError('Invalid profile data');
+          setLoading(false);
+          return;
         }
-      };
-      
-      loadHealthRecords();
-      setLoading(false);
+        
+        console.log('Fetching health records for profile ID:', profile.id);
+        const { data, error } = await getHealthRecords(profile.id);
+        
+        if (error) {
+          console.error('Error loading health records:', error);
+          setError('Failed to load health records');
+          setLoading(false);
+          return;
+        }
+        
+        console.log(`Loaded ${data?.length || 0} health records`);
+        setHealthRecords(data || []);
+        
+        if (data && data.length > 0) {
+          // Process data for charts
+          const bmiData = data.filter(r => r.record_type === 'bmi')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+            
+          const weightData = data.filter(r => r.record_type === 'weight')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+            
+          const caloriesData = data.filter(r => r.record_type === 'calories')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+            
+          const waterData = data.filter(r => r.record_type === 'water')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+            
+          const bodyFatData = data.filter(r => r.record_type === 'body_fat')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+            
+          const bloodPressureData = data.filter(r => r.record_type === 'blood_pressure')
+            .sort((a, b) => new Date(a.record_date).getTime() - new Date(b.record_date).getTime())
+            .slice(-5);
+          
+          setChartData({
+            bmi: bmiData,
+            weight: weightData,
+            calories: caloriesData,
+            water: waterData,
+            bodyFat: bodyFatData,
+            bloodPressure: bloodPressureData
+          });
+        }
+      } catch (err: unknown) {
+        console.error('Caught error in loadHealthRecords:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load health records');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (profile) {
+      loadProfileData();
     }
-  }, [profile, loading, router]);
+  }, [profile, loading]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -257,8 +259,8 @@ export default function Profile() {
       pdf.setProperties({
         title: `${userName} - Health Profile`,
         subject: 'Health Records',
-        author: 'HealthTrack',
-        creator: 'HealthTrack App'
+        author: 'Nestro Health',
+        creator: 'Nestro Health App'
       });
       
       // Add header with app name
@@ -268,7 +270,7 @@ export default function Profile() {
       // Add title with user name
       pdf.setTextColor(255, 255, 255); // White text
       pdf.setFontSize(22);
-      const title = `HealthTrack`;
+      const title = `Nestro Health`;
       pdf.text(title, pdf.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
       
       // Add subtitle with user info
@@ -310,43 +312,52 @@ export default function Profile() {
         color: RGBColor, 
         details: string
       ) => {
-        // Base box
+        // Base box - increase width slightly for more space
         pdf.setFillColor(248, 250, 252);
-        pdf.roundedRect(15, y, 180, 40, 3, 3, 'F'); // Increased height
+        pdf.roundedRect(15, y, 180, 45, 3, 3, 'F'); // Increased height more
         
         // Colored accent on left side
         pdf.setFillColor(color[0], color[1], color[2]);
-        pdf.rect(15, y, 7, 40, 'F'); // Match increased height
+        pdf.rect(15, y, 7, 45, 'F'); // Match increased height
         
-        // Feature title in colored box
-        pdf.setFillColor(color[0], color[1], color[2], 0.2);
+        // Feature title in colored box - change from black to light color
+        pdf.setFillColor(50, 50, 50); // Dark gray background instead of black
         pdf.rect(22, y, 40, 8, 'F');
         
-        pdf.setTextColor(0, 0, 0);
+        // Title text in white for better contrast
+        pdf.setTextColor(255, 255, 255); // White text for better contrast with dark background
         pdf.setFontSize(11);
         pdf.setFont('helvetica', 'bold');
         pdf.text(title, 42, y + 5.5, { align: 'center' });
         
-        // Main value (large)
-        pdf.setFontSize(16); // Slightly smaller to avoid overflow
-        pdf.text(value, 42, y + 20);
+        // Main value (large) - Handle long values by limiting width and adding line breaks if needed
+        pdf.setTextColor(0, 0, 0); // Reset text color for the value
+        pdf.setFontSize(15); // Slightly smaller to avoid overflow
+        
+        // Wrap long values to prevent overlap
+        const valueLines = pdf.splitTextToSize(value, 55); // Reduce width more to avoid overlap
+        pdf.text(valueLines, 32, y + 20); // Moved more left
         pdf.setFont('helvetica', 'normal');
         
         // Last updated info
         pdf.setFontSize(8);
         pdf.setTextColor(100, 100, 100);
-        pdf.text(description, 42, y + 30); // Moved down for better spacing
+        pdf.text(description, 32, y + 35); // Moved down further for better spacing
         
-        // Detailed information about the feature
+        // Create a clearer separation between value and description sections
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(85, y + 5, 85, y + 40); // Move line slightly to the left
+        
+        // Detailed information about the feature - moved further right with more space
         pdf.setTextColor(80, 80, 80);
         pdf.setFontSize(9);
-        const splitDetails = pdf.splitTextToSize(details, 100); // Create line breaks for long text
+        const splitDetails = pdf.splitTextToSize(details, 85); // Slightly narrower to prevent edge overflow
         // Ensure the text doesn't overflow by limiting lines if needed
-        const maxLines = 3;
+        const maxLines = 4; // Allow one more line
         const truncatedDetails = splitDetails.length > maxLines ? 
           [...splitDetails.slice(0, maxLines - 1), splitDetails[maxLines - 1] + '...'] : 
           splitDetails;
-        pdf.text(truncatedDetails, 95, y + 15);
+        pdf.text(truncatedDetails, 95, y + 15); // Moved further right
       };
       
       // Define colors for different metrics (in RGB format)
@@ -356,7 +367,8 @@ export default function Profile() {
         bodyFat: [249, 115, 22] as RGBColor,   // orange
         calories: [239, 68, 68] as RGBColor,   // red
         water: [6, 182, 212] as RGBColor,      // cyan
-        bloodPressure: [139, 92, 246] as RGBColor // purple
+        bloodPressure: [139, 92, 246] as RGBColor, // purple
+        steps: [102, 178, 255] as RGBColor     // light blue
       };
       
       // Define detailed descriptions for each feature
@@ -366,7 +378,8 @@ export default function Profile() {
         bodyFat: "Body fat percentage indicates the proportion of fat tissue relative to total body weight. Lower percentages generally indicate better fitness.",
         calories: "Calorie needs vary based on age, weight, height, gender, and activity level. This is your estimated daily requirement.",
         water: "Water intake requirements depend on activity level, climate, and body size. Adequate hydration is essential for overall health.",
-        bloodPressure: "Blood pressure readings show systolic/diastolic pressure. Normal levels are important for cardiovascular health."
+        bloodPressure: "Blood pressure readings show systolic/diastolic pressure. Normal levels are important for cardiovascular health.",
+        steps: "Steps taken per day help measure physical activity and contribute to overall health."
       };
       
       // Check if we need a new page between each major section and before/after adding health metrics
@@ -386,15 +399,22 @@ export default function Profile() {
         else if (bmi < 40) bmiCategory = "Obesity (Class II)";
         else bmiCategory = "Obesity (Class III)";
         
+        // Format the BMI value and category with clear line breaks
+        const bmiValue = latestBMI.record_value.toFixed(1);
+        const bmiWithCategory = `${bmiValue}\n(${bmiCategory})`;
+        
+        // Use more descriptive but shorter description to avoid overflow
+        const bmiDescription = `${featureDescriptions.bmi}\n${bmiValue}: "${bmiCategory}"`;
+        
         addDetailedStatBox(
           'BMI', 
-          `${latestBMI.record_value.toFixed(1)} (${bmiCategory})`, 
+          bmiWithCategory, // Add a line break between value and category
           `Last updated: ${formatDate(latestBMI.record_date)}`,
           yPos,
           colors.bmi,
-          `${featureDescriptions.bmi}\nYour value of ${latestBMI.record_value.toFixed(1)} places you in the ${bmiCategory} category.`
+          bmiDescription // Simplified description that won't wrap as much
         );
-        yPos += 45; // Increased spacing between stat boxes
+        yPos += 50; // Extra spacing for the increased box height
       }
       
       if (latestWeight) {
@@ -403,15 +423,18 @@ export default function Profile() {
           yPos = 20;
         }
         
+        // Format with consistent approach for better layout
+        const weightValue = `${latestWeight.record_value} kg`;
+        
         addDetailedStatBox(
           'Weight', 
-          `${latestWeight.record_value} kg`, 
+          weightValue,
           `Last updated: ${formatDate(latestWeight.record_date)}`,
           yPos,
           colors.weight,
           featureDescriptions.weight
         );
-        yPos += 45;
+        yPos += 50; // Extra spacing for the increased box height
       }
       
       if (latestBodyFat) {
@@ -429,15 +452,19 @@ export default function Profile() {
         else if (bf < 35) category = "Average";
         else category = "Obese";
         
+        // Format the body fat value and category to avoid long text in one line
+        const bfValue = latestBodyFat.record_value.toFixed(1);
+        const bfWithCategory = `${bfValue}%\n(${category})`;
+        
         addDetailedStatBox(
           'Body Fat', 
-          `${latestBodyFat.record_value.toFixed(1)}% (${category})`, 
+          bfWithCategory, // Add a line break between value and category
           `Last updated: ${formatDate(latestBodyFat.record_date)}`,
           yPos,
           colors.bodyFat,
-          `${featureDescriptions.bodyFat}\nYour value of ${latestBodyFat.record_value.toFixed(1)}% is considered "${category}".`
+          `${featureDescriptions.bodyFat}\nYour value of ${bfValue}% is considered "${category}".`
         );
-        yPos += 45;
+        yPos += 50; // Extra spacing for the increased box height
       }
       
       if (latestCalories) {
@@ -446,15 +473,18 @@ export default function Profile() {
           yPos = 20;
         }
         
+        // Format with consistent approach for better layout
+        const caloriesValue = `${latestCalories.record_value} kcal`;
+        
         addDetailedStatBox(
           'Calories', 
-          `${latestCalories.record_value} kcal`, 
+          caloriesValue,
           `Last updated: ${formatDate(latestCalories.record_date)}`,
           yPos,
           colors.calories,
           `${featureDescriptions.calories}\nYour daily calorie need is approximately ${latestCalories.record_value} kcal.`
         );
-        yPos += 45;
+        yPos += 50; // Extra spacing for the increased box height
       }
       
       if (latestWater) {
@@ -463,45 +493,97 @@ export default function Profile() {
           yPos = 20;
         }
         
+        // Format with consistent approach for better layout
+        const waterValue = `${latestWater.record_value} ml`;
+        
         addDetailedStatBox(
           'Water', 
-          `${latestWater.record_value} ml`, 
+          waterValue,
           `Last updated: ${formatDate(latestWater.record_date)}`,
           yPos,
           colors.water,
           `${featureDescriptions.water}\nYour recommended daily water intake is ${latestWater.record_value} ml.`
         );
-        yPos += 45;
+        yPos += 50; // Extra spacing for the increased box height
       }
       
       if (latestBloodPressure) {
+        // Check if we need a page break
         if (yPos > 230) {
           pdf.addPage();
           yPos = 20;
         }
         
-        let category = "";
-        const systolic = latestBloodPressure.record_value;
-        const diastolic = latestBloodPressure.record_value_2 || 0; // Default to 0 if undefined
+        // Parse the blood pressure value (expecting format like "120/80")
+        const bpValue = String(latestBloodPressure.record_value);
+        const bpParts = bpValue.split('/');
+        const formattedBP = bpParts.length === 2 
+          ? `${bpParts[0]}/${bpParts[1]} mmHg`
+          : `${bpValue} mmHg`;
         
-        if (systolic < 90 || diastolic < 60) category = "Low";
-        else if (systolic < 120 && diastolic < 80) category = "Normal";
-        else if (systolic < 130 && diastolic < 80) category = "Elevated";
-        else if (systolic < 140 || diastolic < 90) category = "Hypertension Stage 1";
-        else if (systolic < 180 || diastolic < 120) category = "Hypertension Stage 2";
-        else category = "Hypertensive Crisis";
+        // Determine blood pressure category
+        let bpCategory = '';
+        if (bpParts.length === 2) {
+          const systolic = parseInt(bpParts[0]);
+          const diastolic = parseInt(bpParts[1]);
+          
+          if (systolic < 120 && diastolic < 80) {
+            bpCategory = 'Normal';
+          } else if ((systolic >= 120 && systolic <= 129) && diastolic < 80) {
+            bpCategory = 'Elevated';
+          } else if ((systolic >= 130 && systolic <= 139) || (diastolic >= 80 && diastolic <= 89)) {
+            bpCategory = 'Stage 1 Hypertension';
+          } else if (systolic >= 140 || diastolic >= 90) {
+            bpCategory = 'Stage 2 Hypertension';
+          } else if (systolic > 180 || diastolic > 120) {
+            bpCategory = 'Hypertensive Crisis';
+          }
+        }
+        
+        // Display blood pressure with category
+        const displayBP = bpCategory 
+          ? `${formattedBP}\n${bpCategory}`
+          : formattedBP;
+          
+        // Simplified description
+        const bpDescription = featureDescriptions.bloodPressure;
         
         addDetailedStatBox(
-          'Blood Pressure', 
-          `${latestBloodPressure.record_value}/${latestBloodPressure.record_value_2} (${category})`, 
+          'Blood Pressure',
+          displayBP,
           `Last updated: ${formatDate(latestBloodPressure.record_date)}`,
           yPos,
           colors.bloodPressure,
-          `${featureDescriptions.bloodPressure}\nYour reading of ${latestBloodPressure.record_value}/${latestBloodPressure.record_value_2} mmHg is categorized as "${category}".`
+          bpDescription
         );
-        yPos += 45;
+        yPos += 50;
       }
       
+      if (latestSteps) {
+        // Check if we need a page break
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        // Format the value to be more readable
+        const formattedSteps = Number(latestSteps.record_value).toLocaleString();
+        
+        // Simplified description to avoid overlap
+        const stepsDescription = `${featureDescriptions.steps}\nDaily goal: 10,000 steps`;
+        
+        addDetailedStatBox(
+          'Daily Steps', 
+          formattedSteps,
+          `Last updated: ${formatDate(latestSteps.record_date)}`,
+          yPos,
+          colors.steps,
+          stepsDescription
+        );
+        yPos += 50;
+      }
+      
+      // If we have no records, show empty state
       if (healthRecords.length === 0) {
         pdf.setFillColor(240, 240, 250);
         pdf.roundedRect(15, yPos, 180, 40, 3, 3, 'F');
@@ -897,7 +979,7 @@ export default function Profile() {
         pdf.setFontSize(8);
         pdf.setTextColor(156, 163, 175);
         pdf.text(
-          `Generated on ${new Date().toLocaleString()} | HealthTrack | Page ${i} of ${totalPages}`, 
+          `Generated on ${new Date().toLocaleString()} | Nestro Health | Page ${i} of ${totalPages}`, 
           pdf.internal.pageSize.getWidth() / 2, 
           pdf.internal.pageSize.getHeight() - 7, 
           { align: 'center' }
@@ -949,6 +1031,7 @@ export default function Profile() {
   const latestWater = getLatestMetric('water');
   const latestBodyFat = getLatestMetric('body_fat');
   const latestBloodPressure = getLatestMetric('blood_pressure');
+  const latestSteps = getLatestMetric('steps');
 
   return (
     <motion.div 
@@ -1088,6 +1171,18 @@ export default function Profile() {
                   `${t('profile.lastUpdated') || 'Last updated'}: ${formatDate(latestBloodPressure.record_date)}`
                 }
                 color="border-pink-500"
+              />
+            )}
+            
+            {latestSteps && (
+              <StatCard 
+                icon={<DocumentArrowDownIcon className="h-6 w-6 text-indigo-600" />}
+                title={t('nav.steps') || 'Steps'}
+                value={latestSteps.record_value.toLocaleString()}
+                description={
+                  `${t('profile.lastUpdated') || 'Last updated'}: ${formatDate(latestSteps.record_date)}`
+                }
+                color="border-indigo-500"
               />
             )}
           </div>

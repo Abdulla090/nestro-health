@@ -4,6 +4,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import FontLoader from "@/components/FontLoader";
 import ClientProvider from "@/components/ClientProvider";
+import { Metadata } from "next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 // Metadata export for Next.js
-export const metadata = {
-  title: 'HealthTrack',
-  description: 'Your complete health and wellness tracking application'
-};
+export const metadata: Metadata = {
+  title: 'Nestro Health',
+  description: 'Complete health calculators and tracking tools',
+}
 
 export default function RootLayout({
   children,
@@ -30,8 +31,9 @@ export default function RootLayout({
   return (
     <html lang="ku" dir="rtl" className="font-sorani">
       <head>
-        <title>HealthTrack - Complete Health Calculators</title>
-        <meta name="description" content="Track and calculate your health metrics easily with HealthTrack" />
+        <title>Nestro Health - Complete Health Calculators</title>
+        <meta name="description" content="Track and calculate your health metrics easily with Nestro Health" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* Preload fonts to ensure they load quickly */}
         <link 
           rel="preload" 

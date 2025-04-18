@@ -1,43 +1,45 @@
-# HealthTrack
+# Nestro Health
 
-HealthTrack is a comprehensive health and wellness tracking application built with Next.js. It provides various calculators for health metrics like BMI, body fat percentage, ideal weight, calorie needs, water intake, and blood pressure.
+Nestro Health is a comprehensive health and wellness tracking application built with Next.js. It provides various calculators for health metrics like BMI, body fat percentage, ideal weight, calorie needs, and more.
 
 ## Features
 
-- 🧮 **Health Calculators**: BMI, calories, ideal weight, body fat, water intake, blood pressure
-- 🤖 **AI Health Assistant**: Powered by Google's Gemini API for health-related queries
-- 📊 **Profile Dashboard**: Track your health metrics over time
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🌐 **Multilingual Support**: English and Kurdish (Sorani) languages
-- 🔐 **Simple Authentication**: Name-only profiles with no password required
+- Multiple health calculators
+- Profile system for saving and tracking results
+- Multi-language support (English and Kurdish)
+- PDF export of health reports
+- Responsive design for all devices
 
 ## Getting Started
 
-First, install the dependencies:
+First, clone the repository and install dependencies:
 
 ```bash
+git clone https://github.com/yourusername/nestrohealth.git
+cd nestrohealth
 npm install
 ```
 
-Create a `.env.local` file from the example:
-
-```bash
-cp .env.example .env.local
-```
-
-If you want to use the AI Health Assistant feature, update the `.env.local` file with your Gemini API key:
-
-```
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-Run the development server:
+Then, run the development server:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Technologies Used
+
+- Next.js 13+ (App Router)
+- React 18+
+- Tailwind CSS
+- Framer Motion
+- TypeScript
+- Supabase (Authentication and Database)
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
 
 ## Supabase Setup
 
@@ -74,10 +76,6 @@ Vercel will automatically build and deploy your application.
 - **AI**: Google's Gemini API
 - **PDF Generation**: jsPDF
 - **Languages**: TypeScript, JavaScript
-
-## License
-
-This project is MIT licensed.
 
 ## Learn More
 

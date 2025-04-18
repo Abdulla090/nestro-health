@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   avatar_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  language_preference TEXT DEFAULT 'ku'
+  language_preference TEXT DEFAULT 'ku',
+  department TEXT,
+  stage TEXT
 );
 
 -- Create index for faster lookups by username

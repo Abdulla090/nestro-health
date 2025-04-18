@@ -16,6 +16,8 @@ export type Profile = {
   created_at: string;
   updated_at?: string;
   language_preference: 'en' | 'ku';
+  department?: string;
+  stage?: string;
 };
 
 // Types for health records
@@ -104,7 +106,7 @@ export const createProfile = async (profile: Omit<Profile, 'id' | 'created_at'> 
 };
 
 // Simplified profile creation with just a name
-export const createSimpleProfile = async (name: string) => {
+export const createSimpleProfile = async (name: string, department?: string, stage?: string) => {
   console.log('Creating simple profile with name:', name);
   if (!name) {
     console.error('Name is required for profile creation');
@@ -122,6 +124,8 @@ export const createSimpleProfile = async (name: string) => {
           id: uniqueId,
           username: name,
           full_name: name,
+          department: department || null,
+          stage: stage || null,
           language_preference: 'ku', // Default to Kurdish
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -212,5 +216,116 @@ export const getHealthRecords = async (userId: string, recordType?: HealthRecord
   } catch (err) {
     console.error('Exception in getHealthRecords:', err);
     return { data: [], error: { message: 'Failed to retrieve health records', details: err } };
+  }
+};
+
+// Admin functions
+export const getAllProfiles = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching all profiles:', error);
+      return { data: [], error };
+    }
+    
+    return { data: data || [], error: null };
+  } catch (e) {
+    console.error('Exception in getAllProfiles:', e);
+    return { data: [], error: { message: 'Failed to fetch profiles' } };
+  }
+};
+
+export const getAllHealthRecords = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('health_records')
+      .select(`
+        *,
+        profiles:user_id (username, full_name)
+      `)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching all health records:', error);
+      return { data: [], error };
+    }
+    
+    return { data: data || [], error: null };
+  } catch (e) {
+    console.error('Exception in getAllHealthRecords:', e);
+    return { data: [], error: { message: 'Failed to fetch health records' } };
+  }
+};
+
+export const getHealthRecordStats = async () => {
+  try {
+    // Get total records count
+    const { count: totalRecords, error: countError } = await supabase
+      .from('health_records')
+      .count();
+    
+    if (countError) {
+      throw countError;
+    }
+    
+    // Get records by type
+    const { data: recordsByType, error: typeError } = await supabase
+      .from('health_records')
+      .select('record_type, count')
+      .select('record_type', { count: 'exact' })
+      .group('record_type');
+      
+    if (typeError) {
+      throw typeError;
+    }
+    
+    // Get unique users with records
+    const { data: uniqueUsers, error: usersError } = await supabase
+      .from('health_records')
+      .select('user_id')
+      .group('user_id');
+    
+    if (usersError) {
+      throw usersError;
+    }
+    
+    // Get latest records
+    const { data: latestRecords, error: latestError } = await supabase
+      .from('health_records')
+      .select(`
+        *,
+        profiles:user_id (username, full_name)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    if (latestError) {
+      throw latestError;
+    }
+    
+    return {
+      data: {
+        totalRecords,
+        recordsByType,
+        uniqueUsersCount: uniqueUsers?.length || 0,
+        latestRecords: latestRecords || []
+      },
+      error: null
+    };
+  } catch (e) {
+    console.error('Exception in getHealthRecordStats:', e);
+    return { 
+      data: {
+        totalRecords: 0,
+        recordsByType: [],
+        uniqueUsersCount: 0,
+        latestRecords: []
+      }, 
+      error: { message: 'Failed to fetch health record statistics' } 
+    };
   }
 }; 

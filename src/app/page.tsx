@@ -395,9 +395,11 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-center md:text-right"
             >
-              <p className="text-gray-400">
-                © {new Date().getFullYear()} HealthTrack. {t("home.footerDisclaimer")}
-              </p>
+              <div className="flex flex-col items-center justify-center mt-16 mb-8">
+                <p className="text-gray-500 text-sm text-center">
+                  © {new Date().getFullYear()} Nestro Health. {t("home.footerDisclaimer")}
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

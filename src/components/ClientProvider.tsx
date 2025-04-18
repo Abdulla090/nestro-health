@@ -54,8 +54,8 @@ export default function ClientProvider({
       document.documentElement.classList.remove('font-sorani');
     }
     
-    // Update document title to use HealthTrack
-    document.title = `HealthTrack - ${t('common.appTagline')}`;
+    // Update document title to use Nestro Health
+    document.title = `Nestro Health - ${t('common.appTagline')}`;
   }, [t, language]);
   
   return (
