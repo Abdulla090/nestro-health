@@ -13,6 +13,7 @@
     "@google/generative-ai": "^0.24.0",
     "@supabase/supabase-js": "^2.49.4",
     "chart.js": "^4.4.9",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.7.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
