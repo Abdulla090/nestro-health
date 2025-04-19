@@ -1,26 +1,7 @@
 {
-  "version": 2,
-  "github": {
-    "silent": true,
-    "enabled": true
-  },
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "next dev",
-  "installCommand": "npm install",
-  "outputDirectory": ".next",
-  "images": {
-    "sizes": [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    "remotePatterns": []
-  },
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key"
+    "NEXT_PUBLIC_SUPABASE_URL": "https://mnwtskbpvadlntjapwyw.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ud3Rza2JwdmFkbG50amFwd3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4OTMzOTIsImV4cCI6MjA2MDQ2OTM5Mn0.-xOOs36h-nd80BjRPhsmNsLEyy1BBTuhYp4Uc3Asvkc"
   },
-  "builds": [
-    {
-      "src": "next.config.js",
-      "use": "@vercel/next"
-    }
-  ]
+  "buildCommand": "npm run build"
 } 
