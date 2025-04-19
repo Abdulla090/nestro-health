@@ -124,9 +124,6 @@ export default function AdminLogin() {
               <p className="text-sm text-gray-600">
                 This area is restricted to authorized administrators only
               </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Username: Abdullla / Password: 123Abdulla098
-              </p>
             </div>
           </div>
         </div>

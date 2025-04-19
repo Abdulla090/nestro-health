@@ -24,22 +24,22 @@ export default function FontLoader() {
     // Create a font loader
     const loadFonts = async () => {
       try {
-        // Force load NizarBukra font - only use TTF format which is working
-        const fontFace = new FontFace(
+        // Load only the regular font which is working
+        const regularFont = new FontFace(
           'NizarBukra',
           `url('/fonts/NizarBukraRegular.ttf') format('truetype')`
         );
         
         // Add font to document fonts and load it
-        const loadedFont = await fontFace.load();
-        document.fonts.add(loadedFont);
+        const loadedRegularFont = await regularFont.load();
+        document.fonts.add(loadedRegularFont);
         
         console.log('NizarBukra font loaded successfully');
         
         // Apply the font to the entire document
         document.documentElement.style.fontFamily = "'NizarBukra', sans-serif";
         
-        // Add an important style to override any other styles with higher specificity
+        // Add font-face definitions and global styles
         const style = document.createElement('style');
         style.textContent = `
           @font-face {
@@ -47,17 +47,17 @@ export default function FontLoader() {
             src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
-            font-display: block;
+            font-display: swap;
           }
           
-          /* No longer using the problematic woff2 format that's causing 404 errors */
-          /* @font-face {
+          /* Use the same regular font for bold text to avoid loading errors */
+          @font-face {
             font-family: 'NizarBukra';
-            src: url('/fonts/NizarBukraBold.woff2') format('woff2');
+            src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
             font-weight: bold;
             font-style: normal;
-            font-display: block;
-          } */
+            font-display: swap;
+          }
           
           html, body, * {
             font-family: 'NizarBukra', sans-serif !important;
@@ -103,7 +103,16 @@ export default function FontLoader() {
               src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
               font-weight: normal;
               font-style: normal;
-              font-display: block;
+              font-display: swap;
+            }
+            
+            /* Also define bold weight using the regular font */
+            @font-face {
+              font-family: 'NizarBukra';
+              src: url('/fonts/NizarBukraRegular.ttf') format('truetype');
+              font-weight: bold;
+              font-style: normal;
+              font-display: swap;
             }
             
             html, body, * {
@@ -117,12 +126,23 @@ export default function FontLoader() {
       }
     };
     
-    loadFonts();
+    // Load fonts after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      loadFonts();
+    }, 100);
     
     // Run this on multiple delays to catch any elements loaded after initial render
-    setTimeout(forceNizarBukraOnAllElements, 500);
-    setTimeout(forceNizarBukraOnAllElements, 1500);
-    setTimeout(forceNizarBukraOnAllElements, 3000);
+    const timeoutIds = [
+      setTimeout(forceNizarBukraOnAllElements, 500),
+      setTimeout(forceNizarBukraOnAllElements, 1500),
+      setTimeout(forceNizarBukraOnAllElements, 3000)
+    ];
+    
+    // Clean up timeouts on unmount
+    return () => {
+      clearTimeout(timeoutId);
+      timeoutIds.forEach(id => clearTimeout(id));
+    };
   }, []);
   
   return null; // This component doesn't render anything

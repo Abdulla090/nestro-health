@@ -4,20 +4,24 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { isAdminAuthenticated, adminLogout, getAdminUsername } from '@/utils/adminAuth';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const [loading, setLoading] = useState(true);
+  // Use useEffect to handle client-side authentication to avoid hydration mismatch
+  const [loading, setLoading] = useState(false); // Start with false to match initial server render
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [username, setUsername] = useState('');
 
   useEffect(() => {
-    // Check if the user is authenticated
+    // Move authentication check to useEffect to avoid hydration mismatch
+    setLoading(true);
+    
     if (!isAdminAuthenticated()) {
       router.push('/admin/login');
       return;
@@ -80,166 +84,169 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
+  // Use client-side only rendering for the loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gray-100">
+        {/* Top Navbar */}
+        <header className="bg-white shadow-sm sticky top-0 z-30">
+          {/* Include minimal header content */}
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                    N
+                  </div>
+                  <span className="ml-2 text-lg font-bold text-gray-800">Nestro Health</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        {/* Loading indicator in main content area */}
+        <main className="py-6 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar for desktop */}
-      <div className="hidden md:flex flex-col w-64 bg-white shadow-lg">
-        <div className="flex items-center justify-center h-16 border-b">
-          <Link href="/admin/dashboard" className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">N</div>
-            <span className="ml-2 text-lg font-bold text-gray-800">Admin Panel</span>
-          </Link>
-        </div>
-        <div className="flex flex-col justify-between flex-1 overflow-y-auto">
-          <div className="p-4">
-            <ul className="space-y-2">
-              {navItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    href={item.path}
-                    className={`flex items-center px-4 py-2 text-gray-700 rounded-lg transition-colors ${
-                      pathname === item.path ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-gray-500">{item.icon}</span>
-                    <span className="ml-3">{item.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="p-4 border-t">
-            <div className="flex items-center mb-4 text-sm">
-              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                {username.charAt(0).toUpperCase()}
-              </div>
-              <div className="ml-3">
-                <p className="font-medium text-gray-800">{username}</p>
-                <p className="text-xs text-gray-500">Administrator</p>
+    <div className="min-h-screen bg-gray-100">
+      {/* Top Navbar */}
+      <header className="bg-white shadow-sm sticky top-0 z-30">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            {/* Logo and site name */}
+            <div className="flex items-center">
+              <div className="flex-shrink-0 flex items-center">
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                  N
+                </div>
+                <span className="ml-2 text-lg font-bold text-gray-800">Nestro Health</span>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="ml-3">Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile sidebar */}
-      <div
-        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
-          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      >
-        <div className="absolute inset-0 bg-gray-600 opacity-75"></div>
-      </div>
-
-      <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:hidden ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between h-16 border-b px-4">
-          <Link href="/admin/dashboard" className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">N</div>
-            <span className="ml-2 text-lg font-bold text-gray-800">Admin Panel</span>
-          </Link>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="text-gray-500 hover:text-gray-700 focus:outline-none"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div className="flex flex-col justify-between flex-1 overflow-y-auto">
-          <div className="p-4">
-            <ul className="space-y-2">
-              {navItems.map((item) => (
-                <li key={item.path}>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center">
+              <nav className="flex space-x-4">
+                {navItems.map((item) => (
                   <Link
+                    key={item.path}
                     href={item.path}
-                    className={`flex items-center px-4 py-2 text-gray-700 rounded-lg transition-colors ${
-                      pathname === item.path ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'
+                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                      pathname === item.path
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                     }`}
-                    onClick={() => setSidebarOpen(false)}
                   >
-                    <span className="text-gray-500">{item.icon}</span>
-                    <span className="ml-3">{item.name}</span>
+                    <span className="mr-2">{item.icon}</span>
+                    <span>{item.name}</span>
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="p-4 border-t">
-            <div className="flex items-center mb-4 text-sm">
-              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                {username.charAt(0).toUpperCase()}
+                ))}
+              </nav>
+            </div>
+
+            {/* User profile and mobile menu button */}
+            <div className="flex items-center">
+              {/* User profile dropdown */}
+              <div className="ml-3 relative">
+                <div className="flex items-center">
+                  <Link href="/" className="text-sm text-gray-700 hover:text-blue-600 mr-4">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      <span>Back to Site</span>
+                    </div>
+                  </Link>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-red-600 hover:text-red-800 flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="font-medium text-gray-800">{username}</p>
-                <p className="text-xs text-gray-500">Administrator</p>
+
+              {/* Mobile menu button */}
+              <div className="ml-2 -mr-2 flex items-center md:hidden">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                >
+                  <span className="sr-only">Open main menu</span>
+                  {mobileMenuOpen ? (
+                    <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="ml-3">Logout</span>
-            </button>
           </div>
         </div>
-      </div>
 
-      {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <header className="flex items-center justify-between h-16 bg-white shadow-sm px-6">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-500 focus:outline-none md:hidden"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <div className="flex items-center">
-            <span className="text-gray-600">Welcome back, <span className="font-semibold">{username}</span></span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Link 
-              href="/"
-              className="flex items-center text-sm text-gray-700 hover:text-blue-600"
+        {/* Mobile menu, show/hide based on menu state */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-gray-200"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Back to Site
-            </Link>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
-          {children}
-        </main>
-      </div>
+              <div className="pt-2 pb-3 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center px-4 py-2 text-base font-medium ${
+                      pathname === item.path
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                    }`}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="pt-4 pb-3 border-t border-gray-200">
+                <div className="flex items-center px-4">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                      {username.charAt(0).toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-base font-medium text-gray-800">{username}</div>
+                    <div className="text-sm font-medium text-gray-500">Administrator</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* Main Content */}
+      <main className="py-6 px-4 sm:px-6 lg:px-8">
+        {children}
+      </main>
     </div>
   );
 } 

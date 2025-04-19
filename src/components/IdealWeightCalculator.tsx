@@ -378,13 +378,13 @@ const IdealWeightCalculator = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mt-6 p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50"
+          className="mt-10 p-8 md:p-12 lg:p-16 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100 w-full max-w-full"
         >
           <motion.h3 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-xl font-bold text-gray-900 mb-6 text-center"
+            className="text-4xl font-bold text-gray-900 mb-12 text-center"
           >
             Your Ideal Weight Results
           </motion.h3>
@@ -393,7 +393,7 @@ const IdealWeightCalculator = () => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.3, type: "spring" }}
-            className="flex flex-col items-center justify-center mb-6"
+            className="flex flex-col items-center justify-center mb-12"
           >
             <motion.div 
               initial={{ scale: 0.9 }}
@@ -403,11 +403,11 @@ const IdealWeightCalculator = () => {
                 repeatType: "reverse", 
                 duration: 0.3 
               }}
-              className="text-5xl font-bold text-blue-600 mb-2"
+              className="text-8xl font-bold text-blue-600 mb-4"
             >
               {idealWeight.average} {unit === "metric" ? "kg" : "lbs"}
             </motion.div>
-            <div className="text-gray-600 text-center">
+            <div className="text-2xl text-gray-600 text-center">
               Average ideal weight
             </div>
           </motion.div>

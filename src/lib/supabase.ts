@@ -228,14 +228,14 @@ export const getAllProfiles = async () => {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching all profiles:', error);
-      return { data: [], error };
+      console.error('Error fetching profiles:', error);
+      return [];
     }
     
-    return { data: data || [], error: null };
+    return data || [];
   } catch (e) {
     console.error('Exception in getAllProfiles:', e);
-    return { data: [], error: { message: 'Failed to fetch profiles' } };
+    return [];
   }
 };
 
@@ -245,19 +245,19 @@ export const getAllHealthRecords = async () => {
       .from('health_records')
       .select(`
         *,
-        profiles:user_id (username, full_name)
+        profiles:user_id (username, full_name, department, stage)
       `)
       .order('created_at', { ascending: false });
     
     if (error) {
       console.error('Error fetching all health records:', error);
-      return { data: [], error };
+      return [];
     }
     
-    return { data: data || [], error: null };
+    return data || [];
   } catch (e) {
     console.error('Exception in getAllHealthRecords:', e);
-    return { data: [], error: { message: 'Failed to fetch health records' } };
+    return [];
   }
 };
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { getAllHealthRecords } from '@/lib/supabase';
+import FilterBar from '@/components/FilterBar';
 
 type EnhancedHealthRecord = {
   id: string;
@@ -15,6 +16,8 @@ type EnhancedHealthRecord = {
   profiles: {
     username: string;
     full_name?: string;
+    department?: string;
+    stage?: string;
   };
   status: 'normal' | 'warning' | 'critical';
 };
@@ -26,6 +29,9 @@ export default function HealthRecordsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateSort, setDateSort] = useState('desc');
+  // Add department and stage filters
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [stageFilter, setStageFilter] = useState('all');
   
   const recordTypeOptions = [
     { value: "all", label: "All Types" },
@@ -45,55 +51,50 @@ export default function HealthRecordsPage() {
   ];
 
   useEffect(() => {
-    async function fetchHealthRecords() {
+    const fetchHealthRecords = async () => {
       setLoading(true);
       try {
-        const { data, error } = await getAllHealthRecords();
+        const fetchedRecords = await getAllHealthRecords();
         
-        if (error) {
-          console.error("Error fetching health records:", error);
-          return;
-        }
+        // Ensure we're working with an array
+        const recordsArray = Array.isArray(fetchedRecords) ? fetchedRecords : [];
         
-        // Add status based on record value
-        const enhancedRecords = data.map(record => {
+        // Process records to add status based on record type and value
+        const processedRecords = recordsArray.map(record => {
           let status: 'normal' | 'warning' | 'critical' = 'normal';
           
           // Determine status based on record type and value
-          if (record.record_type === 'bmi') {
-            const bmi = record.record_value;
-            if (typeof bmi === 'number') {
-              if (bmi < 18.5 || bmi >= 25) status = 'warning';
-              if (bmi < 16 || bmi >= 30) status = 'critical';
-            }
-          } else if (record.record_type === 'blood_pressure') {
-            // For blood pressure, we check systolic (first value)
-            const bloodPressure = String(record.record_value).split('/');
-            const systolic = parseFloat(bloodPressure[0]);
-            if (systolic >= 130) status = 'warning';
-            if (systolic >= 140) status = 'critical';
-          } else if (record.record_type === 'body_fat') {
-            const bodyFat = record.record_value;
-            // Different thresholds could be applied for different genders
-            if (typeof bodyFat === 'number') {
-              if (bodyFat > 25) status = 'warning'; // For men
-              if (bodyFat > 32) status = 'critical'; // For women
-            }
+          switch(record.record_type) {
+            case 'bmi':
+              const bmiValue = parseFloat(record.record_value.toString());
+              if (bmiValue >= 30) status = 'critical';
+              else if (bmiValue >= 25) status = 'warning';
+              break;
+            case 'blood_pressure':
+              if (record.record_value.toString().includes('/')) {
+                const [systolic, diastolic] = record.record_value.toString().split('/').map(Number);
+                if (systolic >= 140 || diastolic >= 90) status = 'critical';
+                else if (systolic >= 130 || diastolic >= 85) status = 'warning';
+              }
+              break;
+            // Add more status determinations for other record types as needed
           }
           
           return {
             ...record,
             status
-          };
+          } as EnhancedHealthRecord;
         });
         
-        setRecords(enhancedRecords);
+        setRecords(processedRecords);
       } catch (error) {
         console.error("Failed to fetch health records:", error);
+        // Initialize with empty array to prevent errors
+        setRecords([]);
       } finally {
         setLoading(false);
       }
-    }
+    };
     
     fetchHealthRecords();
   }, []);
@@ -135,7 +136,7 @@ export default function HealthRecordsPage() {
   // Filter and sort records
   const filteredAndSortedRecords = records
     .filter(record => {
-      // Apply search filter (by username)
+      // Apply search filter (by username or name)
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = 
         (record.profiles?.username?.toLowerCase().includes(searchLower) ?? false) ||
@@ -147,7 +148,13 @@ export default function HealthRecordsPage() {
       // Apply status filter
       const matchesStatus = statusFilter === "all" || record.status === statusFilter;
       
-      return matchesSearch && matchesType && matchesStatus;
+      // Apply department filter
+      const matchesDepartment = departmentFilter === "all" || record.profiles?.department === departmentFilter;
+      
+      // Apply stage filter
+      const matchesStage = stageFilter === "all" || record.profiles?.stage === stageFilter;
+      
+      return matchesSearch && matchesType && matchesStatus && matchesDepartment && matchesStage;
     })
     .sort((a, b) => {
       // Sort by date
@@ -198,155 +205,178 @@ export default function HealthRecordsPage() {
 
   return (
     <AdminLayout>
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Health Records</h1>
-          <p className="text-gray-600">View and manage health data from users</p>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <button
-            className="btn-primary"
-          >
-            Export Records
-          </button>
-        </div>
-      </div>
+      <div className="p-6">
+        <div className="flex flex-col space-y-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Health Records</h1>
+              <p className="text-gray-600">View and manage health data from users</p>
+            </div>
+            <div>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Export Records
+              </button>
+            </div>
+          </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Search by username..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              {recordTypeOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {statusOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={toggleDateSort}
-            className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700 text-sm"
-          >
-            Sort by Date
-            <span className="text-xs">
-              {dateSort === 'desc' ? '↓' : '↑'}
-            </span>
-          </button>
-        </div>
-      </div>
+          {/* Use the FilterBar component */}
+          <FilterBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            departmentFilter={departmentFilter}
+            setDepartmentFilter={setDepartmentFilter}
+            stageFilter={stageFilter}
+            setStageFilter={setStageFilter}
+            totalCount={records.length}
+            filteredCount={filteredAndSortedRecords.length}
+            title="Filter Health Records"
+          />
 
-      {/* Records Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600">Loading health records...</p>
+          {/* Additional filters specific to health records */}
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="recordType" className="block text-sm font-medium text-gray-700 mb-1">
+                  Record Type
+                </label>
+                <select
+                  id="recordType"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                >
+                  {recordTypeOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  id="status"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="dateSort" className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Order
+                </label>
+                <button
+                  id="dateSort"
+                  onClick={toggleDateSort}
+                  className="w-full flex justify-between items-center px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-md transition-colors"
+                >
+                  <span>{dateSort === 'desc' ? 'Newest First' : 'Oldest First'}</span>
+                  <span className="text-lg">
+                    {dateSort === 'desc' ? '↓' : '↑'}
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Record Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Value
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAndSortedRecords.length > 0 ? (
-                  filteredAndSortedRecords.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <span className="text-indigo-600 font-semibold text-sm">
-                              {record.profiles?.username?.[0] || record.profiles?.full_name?.[0] || '?'}
-                            </span>
-                          </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">
-                              {record.profiles?.full_name || record.profiles?.username}
+        </div>
+
+        {/* Records Table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-gray-600">Loading health records...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Record Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Value
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredAndSortedRecords.length > 0 ? (
+                    filteredAndSortedRecords.map((record) => (
+                      <tr key={record.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                              <span className="text-indigo-600 font-semibold text-sm">
+                                {record.profiles?.username?.[0] || record.profiles?.full_name?.[0] || '?'}
+                              </span>
+                            </div>
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-gray-900">
+                                {record.profiles?.full_name || record.profiles?.username}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {record.profiles?.department} {record.profiles?.stage && `- ${record.profiles?.stage}`}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRecordTypeColor(record.record_type)}`}>
-                          {getRecordTypeLabel(record.record_type)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatRecordValue(record)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(record.record_date)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.status)}`}>
-                          {record.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <button className="text-indigo-600 hover:text-indigo-900 px-2">
-                          View
-                        </button>
-                        <button className="text-red-600 hover:text-red-900 px-2">
-                          Delete
-                        </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRecordTypeColor(record.record_type)}`}>
+                            {getRecordTypeLabel(record.record_type)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatRecordValue(record)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(record.record_date)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.status)}`}>
+                            {record.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <button className="text-indigo-600 hover:text-indigo-900 px-2">
+                            View
+                          </button>
+                          <button className="text-red-600 hover:text-red-900 px-2">
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                        No health records found matching your search criteria
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
-                      No health records found matching your search criteria
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );

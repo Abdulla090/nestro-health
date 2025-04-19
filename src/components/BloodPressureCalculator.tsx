@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CalculatorCard from "./CalculatorCard";
 import SaveResultButton from "./SaveResultButton";
+import { motion } from "framer-motion";
 
 const BloodPressureCalculator = () => {
   const [systolic, setSystolic] = useState("");
@@ -171,17 +172,49 @@ const BloodPressureCalculator = () => {
       </div>
 
       {showResults && (
-        <div className="mt-6 p-4 border rounded-md bg-blue-50">
-          <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">
-            Your Blood Pressure Category
-          </h3>
-          <div className="flex flex-col items-center">
-            <div className={`text-2xl font-bold ${getCategoryColor()} mb-2`}>
-              {category}
-            </div>
-            <p className="text-center text-gray-600 mb-4">
-              {getCategoryInfo()}
-            </p>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mt-10 p-8 md:p-12 lg:p-16 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100 w-full max-w-full"
+        >
+          <motion.h3 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-4xl font-bold text-gray-900 mb-12 text-center"
+          >
+            Your Blood Pressure Results
+          </motion.h3>
+          
+          <div className="flex flex-col items-center mb-12">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3, type: "spring" }}
+              className="text-center"
+            >
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="inline-flex items-center justify-center w-56 h-56 rounded-full bg-white shadow-xl"
+                style={{ borderColor: getCategoryColor(), borderWidth: '4px' }}
+              >
+                <div className="flex flex-col items-center">
+                  <span className="text-lg text-gray-500 mb-2">Blood Pressure</span>
+                  <span className={`font-bold ${
+                    systolic.length + diastolic.length > 7 
+                      ? 'text-4xl' 
+                      : systolic.length + diastolic.length > 6 
+                        ? 'text-5xl'
+                        : systolic.length + diastolic.length > 5 
+                          ? 'text-6xl' 
+                          : 'text-8xl'
+                  }`} style={{ color: getCategoryColor() }}>{systolic}/{diastolic}</span>
+                  <span className="text-2xl font-medium" style={{ color: getCategoryColor() }}>{category}</span>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
           
           <div className="mt-4 bg-white p-4 rounded-md shadow-sm">
@@ -250,7 +283,7 @@ const BloodPressureCalculator = () => {
               disabled={!systolic || !diastolic}
             />
           </div>
-        </div>
+        </motion.div>
       )}
     </CalculatorCard>
   );

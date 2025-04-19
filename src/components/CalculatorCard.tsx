@@ -8,6 +8,7 @@ interface CalculatorCardProps {
   icon?: ReactNode;
   description?: string;
   gradient?: string;
+  className?: string;
 }
 
 const CalculatorCard = ({
@@ -16,23 +17,28 @@ const CalculatorCard = ({
   icon,
   description,
   gradient = "bg-gradient-primary",
+  className = "",
 }: CalculatorCardProps) => {
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden max-w-3xl w-full mx-auto transition-all duration-200 hover:shadow-lg">
-      <div className={`p-6 ${gradient} text-white`}>
-        <div className="flex items-center">
-          {icon && (
-            <div className="mr-4 p-3 bg-white/20 rounded-xl">
-              {icon}
+    <div className="relative w-screen -ml-[calc(50vw-50%)] left-[calc(50vw-50%)] bg-white shadow-lg">
+      <div className={`w-full ${gradient} text-white`}>
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8">
+          <div className="flex items-center">
+            {icon && (
+              <div className="mr-4 p-3 bg-white/20 rounded-xl">
+                {icon}
+              </div>
+            )}
+            <div>
+              <h2 className="text-3xl font-bold">{title}</h2>
+              {description && <p className="mt-2 text-lg text-white/90">{description}</p>}
             </div>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold">{title}</h2>
-            {description && <p className="mt-1 text-white/90">{description}</p>}
           </div>
         </div>
       </div>
-      <div className="p-6 md:p-8">{children}</div>
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8">
+        {children}
+      </div>
     </div>
   );
 };

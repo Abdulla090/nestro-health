@@ -288,7 +288,7 @@ const CalorieCalculator = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="mb-8"
+        className="mb-8 max-w-3xl mx-auto"
       >
         <div className="flex justify-center mb-6">
           <motion.div 
@@ -477,150 +477,122 @@ const CalorieCalculator = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mt-10 p-8 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100 w-full max-w-full"
+          className="mt-10 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100"
         >
-          <motion.h3 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl font-bold text-gray-900 mb-8 text-center"
-          >
-            Your Daily Calorie Results
-          </motion.h3>
-          
-          <div className="flex items-center justify-center mb-10">
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3, type: "spring" }}
-              className="text-center"
+          <div className="max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-16">
+            <motion.h3 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl font-bold text-gray-900 mb-12 text-center"
             >
+              Your Daily Calorie Results
+            </motion.h3>
+            
+            <div className="flex items-center justify-center mb-12">
               <motion.div 
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="inline-flex items-center justify-center w-44 h-44 rounded-full bg-white shadow-lg"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3, type: "spring" }}
+                className="text-center"
               >
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-gray-500 mb-1">Daily Intake</span>
-                  <span className="text-6xl font-bold text-indigo-600">{Math.round(calories)}</span>
-                  <span className="text-lg font-medium text-indigo-400">calories</span>
-                </div>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="inline-flex items-center justify-center w-64 h-64 rounded-full bg-white shadow-xl"
+                >
+                  <div className="flex flex-col items-center px-4">
+                    <span className="text-lg text-gray-500 mb-2">Daily Intake</span>
+                    <span className={`font-bold text-indigo-600 ${calories && calories.toString().length > 4 ? 'text-6xl' : 'text-8xl'}`}>
+                      {Math.round(calories)}
+                    </span>
+                    <span className="text-2xl font-medium text-indigo-400">calories</span>
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </div>
-          
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Doughnut Chart */}
-            <div className="flex flex-col items-center p-6 bg-white rounded-xl shadow-md">
-              <h4 className="text-xl font-semibold text-gray-800 mb-4">Macronutrient Ratio</h4>
-              <div className="relative mx-auto w-full" style={{ height: '300px' }}>
-                <Doughnut data={getMacroChartData()} options={doughnutOptions} />
-              </div>
-              
-              <div className="grid grid-cols-3 gap-6 w-full mt-8">
-                <div className="flex flex-col items-center p-3 rounded-lg bg-amber-50 border border-amber-100 shadow-sm">
-                  <span className="text-sm font-medium text-amber-800">Protein</span>
-                  <span className="text-xl font-bold text-amber-700 mt-1">{getMacros().protein}g</span>
-                  <span className="text-xs text-amber-600 mt-1">{Math.round((getMacros().protein * 4 / calories) * 100)}%</span>
-                </div>
-                <div className="flex flex-col items-center p-3 rounded-lg bg-teal-50 border border-teal-100 shadow-sm">
-                  <span className="text-sm font-medium text-teal-800">Carbs</span>
-                  <span className="text-xl font-bold text-teal-700 mt-1">{getMacros().carbs}g</span>
-                  <span className="text-xs text-teal-600 mt-1">{Math.round((getMacros().carbs * 4 / calories) * 100)}%</span>
-                </div>
-                <div className="flex flex-col items-center p-3 rounded-lg bg-purple-50 border border-purple-100 shadow-sm">
-                  <span className="text-sm font-medium text-purple-800">Fats</span>
-                  <span className="text-xl font-bold text-purple-700 mt-1">{getMacros().fats}g</span>
-                  <span className="text-xs text-purple-600 mt-1">{Math.round((getMacros().fats * 9 / calories) * 100)}%</span>
-                </div>
-              </div>
             </div>
             
-            {/* Bar Chart */}
-            <div className="flex flex-col p-6 bg-white rounded-xl shadow-md">
-              <h4 className="text-xl font-semibold text-gray-800 mb-4">Calorie Goals</h4>
-              <div className="h-72">
-                {barData && <Bar options={barOptions} data={getCalorieGoalsData()} />}
-              </div>
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+              {/* Doughnut Chart */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="flex flex-col items-center p-6 bg-white rounded-xl shadow-md"
+              >
+                <h4 className="text-xl font-semibold text-gray-800 mb-4">Macronutrient Ratio</h4>
+                <div className="relative w-full" style={{ height: '400px' }}>
+                  <Doughnut data={getMacroChartData()} options={doughnutOptions} />
+                </div>
+                
+                <div className="grid grid-cols-3 gap-6 w-full mt-8">
+                  {[
+                    { label: "Protein", value: getMacros().protein, color: "amber" },
+                    { label: "Carbs", value: getMacros().carbs, color: "teal" },
+                    { label: "Fats", value: getMacros().fats, color: "purple" }
+                  ].map((macro, index) => (
+                    <motion.div 
+                      key={macro.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + (index * 0.1) }}
+                      className={`flex flex-col items-center p-3 rounded-lg bg-${macro.color}-50 border border-${macro.color}-100 shadow-sm`}
+                    >
+                      <span className={`text-sm font-medium text-${macro.color}-800`}>{macro.label}</span>
+                      <span className={`text-xl font-bold text-${macro.color}-700 mt-1`}>{macro.value}g</span>
+                      <span className={`text-xs text-${macro.color}-600 mt-1`}>
+                        {Math.round((macro.value * (macro.label === "Fats" ? 9 : 4) / calories) * 100)}%
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
               
-              <div className="mt-8 grid grid-cols-1 gap-4">
-                <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 flex justify-between items-center">
-                  <div>
-                    <span className="text-sm font-medium text-blue-800">Weight Loss</span>
-                    <p className="text-xs text-blue-700 mt-1">0.5kg per week</p>
-                  </div>
-                  <span className="text-xl font-bold text-blue-700">{calories - 500} cal</span>
+              {/* Bar Chart */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="flex flex-col p-6 bg-white rounded-xl shadow-md"
+              >
+                <h4 className="text-xl font-semibold text-gray-800 mb-4">Calorie Goals</h4>
+                <div className="h-96">
+                  {barData && <Bar options={barOptions} data={getCalorieGoalsData()} />}
                 </div>
-                <div className="p-4 rounded-lg bg-teal-50 border border-teal-100 flex justify-between items-center">
-                  <div>
-                    <span className="text-sm font-medium text-teal-800">Maintenance</span>
-                    <p className="text-xs text-teal-700 mt-1">Current weight</p>
-                  </div>
-                  <span className="text-xl font-bold text-teal-700">{calories} cal</span>
+                
+                <div className="mt-8 grid grid-cols-1 gap-4">
+                  {[
+                    { label: "Weight Loss", desc: "0.5kg per week", value: calories - 500, color: "blue" },
+                    { label: "Maintenance", desc: "Current weight", value: calories, color: "teal" },
+                    { label: "Weight Gain", desc: "0.5kg per week", value: calories + 500, color: "pink" }
+                  ].map((goal, index) => (
+                    <motion.div 
+                      key={goal.label}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 + (index * 0.1) }}
+                      className={`p-4 rounded-lg bg-${goal.color}-50 border border-${goal.color}-100 flex justify-between items-center`}
+                    >
+                      <div>
+                        <span className={`text-sm font-medium text-${goal.color}-800`}>{goal.label}</span>
+                        <p className={`text-xs text-${goal.color}-700 mt-1`}>{goal.desc}</p>
+                      </div>
+                      <span className={`text-xl font-bold text-${goal.color}-700`}>{goal.value} cal</span>
+                    </motion.div>
+                  ))}
                 </div>
-                <div className="p-4 rounded-lg bg-pink-50 border border-pink-100 flex justify-between items-center">
-                  <div>
-                    <span className="text-sm font-medium text-pink-800">Weight Gain</span>
-                    <p className="text-xs text-pink-700 mt-1">0.5kg per week</p>
-                  </div>
-                  <span className="text-xl font-bold text-pink-700">{calories + 500} cal</span>
-                </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-10 pt-8 border-t border-gray-200"
-          >
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <h4 className="font-semibold text-xl mb-4 text-gray-800">Macronutrient Breakdown</h4>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center mb-2">
-                    <div className="w-24 text-sm font-medium text-gray-700">Protein:</div>
-                    <div className="ml-4 text-sm font-medium">{getMacros().protein}g ({Math.round((getMacros().protein * 4 / calories) * 100)}%)</div>
-                  </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div 
-                      className="bg-amber-500 h-4 rounded-full" 
-                      style={{ width: `${Math.round((getMacros().protein * 4 / calories) * 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center mb-2">
-                    <div className="w-24 text-sm font-medium text-gray-700">Carbs:</div>
-                    <div className="ml-4 text-sm font-medium">{getMacros().carbs}g ({Math.round((getMacros().carbs * 4 / calories) * 100)}%)</div>
-                  </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div 
-                      className="bg-teal-500 h-4 rounded-full" 
-                      style={{ width: `${Math.round((getMacros().carbs * 4 / calories) * 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center mb-2">
-                    <div className="w-24 text-sm font-medium text-gray-700">Fats:</div>
-                    <div className="ml-4 text-sm font-medium">{getMacros().fats}g ({Math.round((getMacros().fats * 9 / calories) * 100)}%)</div>
-                  </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div 
-                      className="bg-purple-500 h-4 rounded-full" 
-                      style={{ width: `${Math.round((getMacros().fats * 9 / calories) * 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h5 className="font-semibold text-lg mb-2 text-gray-800">Your Formula Details</h5>
-                <p className="text-sm text-gray-600 mb-3">
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-10 pt-8 border-t border-gray-200 max-w-7xl mx-auto"
+            >
+              <div className="bg-white p-6 rounded-xl shadow-md">
+                <h4 className="font-semibold text-xl mb-4 text-gray-800">Your Formula Details</h4>
+                <p className="text-gray-700 mb-4">
                   Based on the Mifflin-St Jeor Equation, which is considered one of the most accurate formulas for calculating basal metabolic rate (BMR).
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -642,15 +614,15 @@ const CalorieCalculator = () => {
                   </div>
                 </div>
               </div>
+            </motion.div>
+            
+            <div className="flex justify-center mt-8">
+              <SaveResultButton
+                recordType="calories"
+                value={calories || 0}
+                disabled={!calories}
+              />
             </div>
-          </motion.div>
-          
-          <div className="flex justify-center mt-8">
-            <SaveResultButton
-              recordType="calories"
-              value={calories || 0}
-              disabled={!calories}
-            />
           </div>
         </motion.div>
       )}

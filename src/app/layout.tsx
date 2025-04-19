@@ -33,7 +33,7 @@ export default function RootLayout({
       <head>
         <title>Nestro Health - Complete Health Calculators</title>
         <meta name="description" content="Track and calculate your health metrics easily with Nestro Health" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         {/* Preload fonts to ensure they load quickly */}
         <link 
           rel="preload" 

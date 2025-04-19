@@ -88,29 +88,29 @@ const BodyFatCalculator = () => {
     if (gender === "male") {
       if (age < 40) {
         if (bf < 8) return "Essential Fat";
-        if (bf < 14) return "Athletic";
-        if (bf < 21) return "Fitness";
-        if (bf < 25) return "Average";
+        if (bf < 13) return "Athletic";
+        if (bf < 20) return "Fitness";
+        if (bf < 24) return "Average";
         return "Obese";
       } else {
         if (bf < 11) return "Essential Fat";
-        if (bf < 17) return "Athletic";
-        if (bf < 23) return "Fitness";
-        if (bf < 29) return "Average";
+        if (bf < 16) return "Athletic";
+        if (bf < 22) return "Fitness";
+        if (bf < 26) return "Average";
         return "Obese";
       }
     } else {
       if (age < 40) {
-        if (bf < 13) return "Essential Fat";
-        if (bf < 21) return "Athletic";
+        if (bf < 14) return "Essential Fat";
+        if (bf < 20) return "Athletic";
         if (bf < 28) return "Fitness";
-        if (bf < 33) return "Average";
+        if (bf < 32) return "Average";
         return "Obese";
       } else {
-        if (bf < 14) return "Essential Fat";
-        if (bf < 23) return "Athletic";
+        if (bf < 16) return "Essential Fat";
+        if (bf < 22) return "Athletic";
         if (bf < 30) return "Fitness";
-        if (bf < 36) return "Average";
+        if (bf < 34) return "Average";
         return "Obese";
       }
     }
@@ -330,6 +330,23 @@ const BodyFatCalculator = () => {
     setHip("");
     setBodyFat(null);
     setCategory("");
+  };
+
+  const getCategoryInfo = () => {
+    switch (category) {
+      case "Essential Fat":
+        return "The minimum amount of body fat necessary for basic physical and physiological health. Essential fat is crucial for normal bodily functions.";
+      case "Athletic":
+        return "Body fat percentage typical of athletes and very fit individuals. This range is associated with optimal performance and health.";
+      case "Fitness":
+        return "A healthy body fat percentage that indicates good fitness and health. This range is ideal for most active individuals.";
+      case "Average":
+        return "A moderate body fat percentage that is common in the general population. While not optimal, it's not necessarily unhealthy.";
+      case "Obese":
+        return "A high body fat percentage that may increase the risk of health problems. Consider consulting a healthcare professional.";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -552,18 +569,18 @@ const BodyFatCalculator = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mt-10 p-8 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100 w-full max-w-full"
+          className="mt-10 p-8 md:p-12 lg:p-16 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg border border-blue-100 w-full max-w-full"
         >
           <motion.h3 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl font-bold text-gray-900 mb-8 text-center"
+            className="text-4xl font-bold text-gray-900 mb-12 text-center"
           >
             Your Body Composition Results
           </motion.h3>
           
-          <div className="flex items-center justify-center mb-10">
+          <div className="flex items-center justify-center mb-12">
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -573,13 +590,13 @@ const BodyFatCalculator = () => {
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="inline-flex items-center justify-center w-44 h-44 rounded-full bg-white shadow-lg"
+                className="inline-flex items-center justify-center w-56 h-56 rounded-full bg-white shadow-xl"
                 style={{ borderColor: getCategoryColor(category), borderWidth: '4px' }}
               >
                 <div className="flex flex-col items-center">
-                  <span className="text-sm text-gray-500 mb-1">Body Fat</span>
-                  <span className="text-6xl font-bold" style={{ color: getCategoryColor(category) }}>{bodyFat}%</span>
-                  <span className="text-lg font-medium" style={{ color: getCategoryColor(category) }}>{category}</span>
+                  <span className="text-lg text-gray-500 mb-2">Body Fat</span>
+                  <span className="text-8xl font-bold" style={{ color: getCategoryColor(category) }}>{bodyFat}%</span>
+                  <span className="text-2xl font-medium" style={{ color: getCategoryColor(category) }}>{category}</span>
                 </div>
               </motion.div>
             </motion.div>
