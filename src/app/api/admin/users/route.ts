@@ -3,9 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 // Remove client-side auth check that's causing the error
 // import { isAdminAuthenticated } from '@/utils/adminAuth';
 
-// Supabase configuration
+// Supabase configuration - use hardcoded values as fallbacks when env vars aren't available
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mnwtskbpvadlntjapwyw.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ud3Rza2JwdmFkbG50amFwd3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4OTMzOTIsImV4cCI6MjA2MDQ2OTM5Mn0.-xOOs36h-nd80BjRPhsmNsLEyy1BBTuhYp4Uc3Asvkc';
+const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ud3Rza2JwdmFkbG50amFwd3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4OTMzOTIsImV4cCI6MjA2MDQ2OTM5Mn0.-xOOs36h-nd80BjRPhsmNsLEyy1BBTuhYp4Uc3Asvkc';
 
 // Create a supabase client with admin privileges
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
