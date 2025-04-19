@@ -415,6 +415,11 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      
+      {/* Version indicator to verify latest deployment */}
+      <div className="text-center text-xs text-gray-400 mt-8 mb-4">
+        Version 2.0 - Latest Update
+      </div>
     </div>
   );
 }
