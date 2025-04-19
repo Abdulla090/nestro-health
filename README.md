@@ -91,3 +91,60 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deployment Guide
+
+### Deploying to Vercel
+
+This project is configured for deployment with Vercel. Follow these steps to deploy:
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. **Important**: Set up environment variables in Vercel dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+
+#### Environment Variables Setup
+
+You can set up environment variables in two ways:
+
+**Method 1: Using Vercel Dashboard**
+1. Go to your project in the Vercel dashboard
+2. Navigate to Settings > Environment Variables
+3. Add variables with their values and deploy
+
+**Method 2: Using Vercel CLI**
+```bash
+# Install Vercel CLI if you haven't already
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Add environment variables (you'll be prompted for values)
+vercel env add NEXT_PUBLIC_SUPABASE_URL
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Deploy your project
+vercel deploy --prod
+```
+
+#### Troubleshooting
+
+If you see an error like:
+```
+Error: Environment Variable "NEXT_PUBLIC_SUPABASE_URL" references Secret "next_public_supabase_url", which does not exist.
+```
+
+This means you need to set up the environment variables using one of the methods above.
+
+### Local Development
+
+To run the project locally:
+
+1. Create a `.env.local` file with your environment variables
+2. Run the development server:
+
+```bash
+npm run dev
+```
