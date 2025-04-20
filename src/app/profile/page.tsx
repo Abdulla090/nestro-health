@@ -368,7 +368,9 @@ export default function Profile() {
         calories: [239, 68, 68] as RGBColor,   // red
         water: [6, 182, 212] as RGBColor,      // cyan
         bloodPressure: [139, 92, 246] as RGBColor, // purple
-        steps: [102, 178, 255] as RGBColor     // light blue
+        steps: [102, 178, 255] as RGBColor,     // light blue
+        boneMass: [20, 184, 166] as RGBColor,   // teal
+        macros: [168, 85, 247] as RGBColor      // purple
       };
       
       // Define detailed descriptions for each feature
@@ -379,7 +381,9 @@ export default function Profile() {
         calories: "Calorie needs vary based on age, weight, height, gender, and activity level. This is your estimated daily requirement.",
         water: "Water intake requirements depend on activity level, climate, and body size. Adequate hydration is essential for overall health.",
         bloodPressure: "Blood pressure readings show systolic/diastolic pressure. Normal levels are important for cardiovascular health.",
-        steps: "Steps taken per day help measure physical activity and contribute to overall health."
+        steps: "Steps taken per day help measure physical activity and contribute to overall health.",
+        boneMass: "Bone mass is the amount of bone mineral in your skeletal system. It's important for skeletal health and to prevent osteoporosis.",
+        macros: "Macronutrients (protein, carbs, and fats) are essential nutrients needed in larger amounts. The right balance supports your fitness goals."
       };
       
       // Check if we need a new page between each major section and before/after adding health metrics
@@ -579,6 +583,60 @@ export default function Profile() {
           yPos,
           colors.steps,
           stepsDescription
+        );
+        yPos += 50;
+      }
+      
+      if (latestBoneMass) {
+        // Check if we need a page break
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        // Format the value to be more readable
+        const formattedBoneMass = latestBoneMass.record_value.toFixed(1);
+        
+        // Simplified description
+        const boneMassDescription = `${featureDescriptions.boneMass}\nBone mass is calculated based on weight, height, and gender.`;
+        
+        addDetailedStatBox(
+          'Bone Mass', 
+          `${formattedBoneMass} kg`,
+          `Last updated: ${formatDate(latestBoneMass.record_date)}`,
+          yPos,
+          colors.boneMass,
+          boneMassDescription
+        );
+        yPos += 50;
+      }
+
+      if (latestMacros) {
+        // Check if we need a page break
+        if (yPos > 230) {
+          pdf.addPage();
+          yPos = 20;
+        }
+        
+        // Format the value to be more readable
+        const formattedCalories = latestMacros.record_value.toLocaleString();
+        
+        // Calculate approximate macronutrient distribution based on calories
+        // Standard distribution: 30% protein, 40% carbs, 30% fat
+        const protein = Math.round((latestMacros.record_value * 0.3) / 4); // 4 calories per gram of protein
+        const carbs = Math.round((latestMacros.record_value * 0.4) / 4);   // 4 calories per gram of carbs
+        const fats = Math.round((latestMacros.record_value * 0.3) / 9);    // 9 calories per gram of fat
+        
+        // Simplified description with macronutrient breakdown
+        const macrosDescription = `${featureDescriptions.macros}\nApproximate daily needs: ${protein}g protein, ${carbs}g carbs, ${fats}g fat.`;
+        
+        addDetailedStatBox(
+          'Macronutrients', 
+          `${formattedCalories} kcal`,
+          `Last updated: ${formatDate(latestMacros.record_date)}`,
+          yPos,
+          colors.macros,
+          macrosDescription
         );
         yPos += 50;
       }
@@ -1032,6 +1090,8 @@ export default function Profile() {
   const latestBodyFat = getLatestMetric('body_fat');
   const latestBloodPressure = getLatestMetric('blood_pressure');
   const latestSteps = getLatestMetric('steps');
+  const latestMacros = getLatestMetric('calories'); // We're using the calories record type for macros
+  const latestBoneMass = getLatestMetric('bone_mass'); // Add bone mass metric
 
   return (
     <motion.div 
@@ -1185,6 +1245,38 @@ export default function Profile() {
                 color="border-indigo-500"
               />
             )}
+
+            {latestMacros && (
+              <Link href="/macros">
+                <StatCard 
+                  icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>}
+                  title={t('nav.macronutrients') || 'Macronutrients'}
+                  value={`${latestMacros.record_value} kcal`}
+                  description={
+                    `${t('profile.lastUpdated') || 'Last updated'}: ${formatDate(latestMacros.record_date)}`
+                  }
+                  color="border-purple-500"
+                />
+              </Link>
+            )}
+
+            {latestBoneMass && (
+              <Link href="/bone-mass">
+                <StatCard 
+                  icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                  </svg>}
+                  title={t('nav.boneMass') || 'Bone Mass'}
+                  value={`${latestBoneMass.record_value.toFixed(1)} kg`}
+                  description={
+                    `${t('profile.lastUpdated') || 'Last updated'}: ${formatDate(latestBoneMass.record_date)}`
+                  }
+                  color="border-teal-500"
+                />
+              </Link>
+            )}
           </div>
         </div>
         
@@ -1204,6 +1296,27 @@ export default function Profile() {
           </h2>
           
           {/* Add activity history section here */}
+        </div>
+
+        {/* Export to PDF button */}
+        <div className="flex justify-center mb-16">
+          <button
+            onClick={exportToPDF}
+            disabled={exportLoading}
+            className={`px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium shadow-md hover:from-blue-600 hover:to-indigo-700 transition-all flex items-center space-x-2 ${exportLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {exportLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                {t('profile.exporting') || 'Exporting...'}
+              </>
+            ) : (
+              <>
+                <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+                {t('profile.exportPDF') || 'Export Health Report (PDF)'}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </motion.div>

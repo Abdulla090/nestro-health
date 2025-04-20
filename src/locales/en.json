@@ -17,6 +17,7 @@
     "waterIntake": "Water Intake",
     "bloodPressure": "Blood Pressure",
     "healthAssistant": "Health Assistant",
+    "heartRate": "Heart Rate Zones",
     "profile": "Profile",
     "createProfile": "Create Profile",
     "signIn": "Sign In",
@@ -159,6 +160,9 @@
     },
     "bloodPressure": {
       "description": "Check your blood pressure category according to American Heart Association guidelines."
+    },
+    "heartRate": {
+      "description": "Calculate your optimal heart rate training zones using the more accurate Tanaka formula."
     },
     "healthAssistant": {
       "description": "Chat with our AI-powered health assistant for fitness, nutrition, and wellness advice."

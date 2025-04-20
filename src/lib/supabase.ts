@@ -24,7 +24,7 @@ export type Profile = {
 export type HealthRecord = {
   id: string;
   user_id: string;
-  record_type: 'bmi' | 'calories' | 'weight' | 'water' | 'blood_pressure' | 'body_fat';
+  record_type: 'bmi' | 'calories' | 'weight' | 'water' | 'blood_pressure' | 'body_fat' | 'bone_mass';
   record_date: string;
   record_value: number;
   record_value_2?: number; // For measurements that need two values (like blood pressure)
