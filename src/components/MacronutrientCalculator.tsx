@@ -20,9 +20,9 @@ const COLORS = ['#FF8042', '#0088FE', '#00C49F'];
 
 const MacronutrientCalculator: React.FC = () => {
   // User inputs
-  const [weight, setWeight] = useState<number>(70);
-  const [height, setHeight] = useState<number>(170);
-  const [age, setAge] = useState<number>(30);
+  const [weight, setWeight] = useState<string>('');
+  const [height, setHeight] = useState<string>('');
+  const [age, setAge] = useState<string>('');
   const [gender, setGender] = useState<Gender>('male');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>('moderate');
   const [goal, setGoal] = useState<MacroGoal>('maintenance');
@@ -59,16 +59,22 @@ const MacronutrientCalculator: React.FC = () => {
   };
 
   const calculateMacros = () => {
+    // Check if all required fields are filled
+    if (!weight || !height || !age) {
+      return;
+    }
+    
     // Convert to metric if needed
-    const weightKg = isMetric ? weight : weight * 0.453592;
-    const heightCm = isMetric ? height : height * 2.54;
+    const weightKg = isMetric ? Number(weight) : Number(weight) * 0.453592;
+    const heightCm = isMetric ? Number(height) : Number(height) * 2.54;
+    const ageValue = Number(age);
     
     // Calculate BMR using Mifflin-St Jeor Equation
     let bmr;
     if (gender === 'male') {
-      bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+      bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageValue + 5;
     } else {
-      bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+      bmr = 10 * weightKg + 6.25 * heightCm - 5 * ageValue - 161;
     }
     
     // Calculate TDEE (Total Daily Energy Expenditure)
@@ -91,30 +97,30 @@ const MacronutrientCalculator: React.FC = () => {
   };
 
   const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0) {
+    const value = e.target.value;
+    if (value === '' || (!isNaN(Number(value)) && Number(value) > 0)) {
       setWeight(value);
     }
   };
 
   const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0) {
+    const value = e.target.value;
+    if (value === '' || (!isNaN(Number(value)) && Number(value) > 0)) {
       setHeight(value);
     }
   };
 
   const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0 && value < 120) {
+    const value = e.target.value;
+    if (value === '' || (!isNaN(Number(value)) && Number(value) > 0 && Number(value) < 120)) {
       setAge(value);
     }
   };
 
   const handleReset = () => {
-    setWeight(70);
-    setHeight(170);
-    setAge(30);
+    setWeight('');
+    setHeight('');
+    setAge('');
     setGender('male');
     setActivityLevel('moderate');
     setGoal('maintenance');
@@ -182,6 +188,7 @@ const MacronutrientCalculator: React.FC = () => {
               value={weight}
               onChange={handleWeightChange}
               min="1"
+              placeholder={isMetric ? "e.g., 70" : "e.g., 154"}
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
@@ -196,6 +203,7 @@ const MacronutrientCalculator: React.FC = () => {
               value={height}
               onChange={handleHeightChange}
               min="1"
+              placeholder={isMetric ? "e.g., 175" : "e.g., 69"}
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
@@ -211,6 +219,7 @@ const MacronutrientCalculator: React.FC = () => {
               onChange={handleAgeChange}
               min="18"
               max="120"
+              placeholder="e.g., 30"
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
