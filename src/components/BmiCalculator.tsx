@@ -28,6 +28,8 @@ const BmiCalculator = () => {
   const [weight, setWeight] = useState("");
   const [heightFeet, setHeightFeet] = useState("");
   const [heightInches, setHeightInches] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("male");
   const [unit, setUnit] = useState("metric");
   const [bmi, setBmi] = useState<number | null>(null);
   const [bmiCategory, setBmiCategory] = useState("");
@@ -55,12 +57,35 @@ const BmiCalculator = () => {
   };
 
   const getBmiCategory = (bmiValue: number): string => {
+    // For children and adolescents, BMI interpretation varies by age and sex
+    const ageValue = parseFloat(age);
+    
+    // For adults (standard BMI categories)
+    if (!age || ageValue >= 20) {
+      if (bmiValue < 18.5) return "Underweight";
+      if (bmiValue < 25) return "Normal weight";
+      if (bmiValue < 30) return "Overweight";
+      if (bmiValue < 35) return "Obesity Class I";
+      if (bmiValue < 40) return "Obesity Class II";
+      return "Obesity Class III";
+    } 
+    
+    // For elderly (65+), slightly higher BMI may be acceptable
+    if (ageValue >= 65) {
+      if (bmiValue < 22) return "Underweight";
+      if (bmiValue < 27) return "Normal weight";
+      if (bmiValue < 32) return "Overweight";
+      if (bmiValue < 37) return "Obesity Class I";
+      if (bmiValue < 42) return "Obesity Class II";
+      return "Obesity Class III";
+    }
+    
+    // For children and teens (note: this is simplified - actual pediatric BMI uses percentiles)
+    // Return standard categories but with a note that interpretation is different
     if (bmiValue < 18.5) return "Underweight";
     if (bmiValue < 25) return "Normal weight";
     if (bmiValue < 30) return "Overweight";
-    if (bmiValue < 35) return "Obesity Class I";
-    if (bmiValue < 40) return "Obesity Class II";
-    return "Obesity Class III";
+    return "Obese";
   };
 
   const getCategoryColor = (category: string): string => {
@@ -71,29 +96,58 @@ const BmiCalculator = () => {
       case "Obesity Class I": return "#F97316"; // orange
       case "Obesity Class II": return "#EF4444"; // red
       case "Obesity Class III": return "#991B1B"; // dark red
+      case "Obese": return "#EF4444"; // red for simplified child category
       default: return "#1F2937"; // gray
     }
   };
 
   const getBmiRangeText = (category: string): string => {
-    switch (category) {
-      case "Underweight": return "< 18.5";
-      case "Normal weight": return "18.5 - 24.9";
-      case "Overweight": return "25 - 29.9";
-      case "Obesity Class I": return "30 - 34.9";
-      case "Obesity Class II": return "35 - 39.9";
-      case "Obesity Class III": return "≥ 40";
-      default: return "";
+    // If elderly, show adjusted ranges
+    const ageValue = parseFloat(age);
+    if (ageValue >= 65) {
+      switch (category) {
+        case "Underweight": return "< 22";
+        case "Normal weight": return "22 - 26.9";
+        case "Overweight": return "27 - 31.9";
+        case "Obesity Class I": return "32 - 36.9";
+        case "Obesity Class II": return "37 - 41.9";
+        case "Obesity Class III": return "≥ 42";
+        default: return "";
+      }
+    } else {
+      // Standard adult ranges
+      switch (category) {
+        case "Underweight": return "< 18.5";
+        case "Normal weight": return "18.5 - 24.9";
+        case "Overweight": return "25 - 29.9";
+        case "Obesity Class I": return "30 - 34.9";
+        case "Obesity Class II": return "35 - 39.9";
+        case "Obesity Class III": return "≥ 40";
+        case "Obese": return "≥ 30";
+        default: return "";
+      }
     }
   };
 
   const getBmiDistributionData = () => {
+    // Adjust ranges for elderly
+    const ageValue = parseFloat(age);
+    const labels = ['Underweight', 'Normal', 'Overweight', 'Obesity I', 'Obesity II', 'Obesity III'];
+    
+    // Define data ranges based on age
+    let dataRanges;
+    if (ageValue >= 65) {
+      dataRanges = [22, 27, 32, 37, 42, 45]; // Adjusted for elderly
+    } else {
+      dataRanges = [18.5, 25, 30, 35, 40, 42.5]; // Standard
+    }
+    
     return {
-      labels: ['Underweight', 'Normal', 'Overweight', 'Obesity I', 'Obesity II', 'Obesity III'],
+      labels: labels,
       datasets: [
         {
           label: 'BMI Range',
-          data: [18.5, 24.9, 29.9, 34.9, 39.9, 40],
+          data: dataRanges,
           backgroundColor: [
             'rgba(59, 130, 246, 0.2)',
             'rgba(16, 185, 129, 0.2)',
@@ -116,7 +170,12 @@ const BmiCalculator = () => {
         {
           label: 'Your BMI',
           data: Array(6).fill(null).map((_, i) => {
-            const ranges = [0, 18.5, 25, 30, 35, 40, 100];
+            let ranges;
+            if (ageValue >= 65) {
+              ranges = [0, 22, 27, 32, 37, 42, 100]; // Elderly ranges
+            } else {
+              ranges = [0, 18.5, 25, 30, 35, 40, 100]; // Standard ranges
+            }
             return (bmi && bmi >= ranges[i] && bmi < ranges[i + 1]) ? bmi : null;
           }),
           backgroundColor: 'rgba(99, 102, 241, 0.8)',
@@ -176,8 +235,33 @@ const BmiCalculator = () => {
     setWeight("");
     setHeightFeet("");
     setHeightInches("");
+    setAge("");
+    setSex("male");
     setBmi(null);
     setBmiCategory("");
+  };
+
+  // Determine if the BMI interpretation needs special considerations
+  const needsSpecialInterpretation = () => {
+    const ageValue = parseFloat(age);
+    return (ageValue > 0 && ageValue < 20) || ageValue >= 65;
+  };
+
+  // Get additional interpretation message based on age and sex
+  const getInterpretationMessage = () => {
+    const ageValue = parseFloat(age);
+    
+    if (ageValue > 0 && ageValue < 20) {
+      return "For children and teenagers, BMI is interpreted according to age and sex-specific percentiles. Please consult with a healthcare provider for an accurate interpretation.";
+    } else if (ageValue >= 65) {
+      return "For older adults, slightly higher BMI values may be acceptable. BMI ranges have been adjusted accordingly in the assessment.";
+    } else if (sex === "male" && bmi && bmi >= 25 && bmi < 30) {
+      return "Men with higher muscle mass may have a higher BMI without excess fat. Consider also measuring waist circumference for a more complete assessment.";
+    } else if (sex === "female" && bmi && bmi < 18.5) {
+      return "Women may naturally have lower BMI. However, being underweight can still pose health risks including nutrient deficiencies and hormonal imbalances.";
+    }
+    
+    return "";
   };
 
   return (
@@ -230,7 +314,7 @@ const BmiCalculator = () => {
           </div>
 
           {/* Input Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -284,6 +368,62 @@ const BmiCalculator = () => {
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 placeholder={unit === 'metric' ? 'e.g., 70' : 'e.g., 154'}
               />
+            </motion.div>
+          </div>
+
+          {/* Age and Sex Inputs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="w-full"
+            >
+              <label className="block text-gray-700 text-sm font-medium mb-2">
+                Age (years)
+              </label>
+              <input
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                placeholder="e.g., 30"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="w-full"
+            >
+              <label className="block text-gray-700 text-sm font-medium mb-2">
+                Sex
+              </label>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setSex('male')}
+                  className={`flex-1 py-3 px-4 rounded-lg border transition-all ${
+                    sex === 'male'
+                      ? 'bg-blue-50 border-blue-300 text-blue-700'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  Male
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSex('female')}
+                  className={`flex-1 py-3 px-4 rounded-lg border transition-all ${
+                    sex === 'female'
+                      ? 'bg-blue-50 border-blue-300 text-blue-700'
+                      : 'border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  Female
+                </button>
+              </div>
             </motion.div>
           </div>
 
@@ -407,12 +547,26 @@ const BmiCalculator = () => {
                       it's not a diagnostic of body fatness or health. Factors such as age, sex, ethnicity, and muscle mass can influence the relationship
                       between BMI and body fat.
                     </p>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-blue-800">
-                        <strong>Note:</strong> This calculator is for adults 20 years and older. For children and teens, please consult with a healthcare provider
-                        as BMI is interpreted differently.
-                      </p>
-                    </div>
+                    
+                    {/* Special interpretation note based on age/sex */}
+                    {getInterpretationMessage() && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p className="text-blue-800">
+                          <strong>Note:</strong> {getInterpretationMessage()}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Show warning for children if age < 20 */}
+                    {parseFloat(age) > 0 && parseFloat(age) < 20 && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-yellow-800">
+                          <strong>Important:</strong> This calculator provides a simplified BMI assessment for individuals under 20 years old. 
+                          For children and teens, BMI is normally interpreted using age and sex-specific percentile charts. 
+                          Please consult with a healthcare provider for proper interpretation of your child's BMI.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Save Results Button */}
